@@ -53,12 +53,25 @@ export default function App() {
   };
 
   const handleUploadData = (data, workbook, name, sheet) => {
+    // ── Reset ALL downstream state so a sheet switch never carries over
+    // stale mapping / hierarchy / collision data from a previous run ──────────
     setExcelData(data);
     setWb(workbook);
     setFileName(name);
     setSheetName(sheet);
+    setMaxLevels(null);
+    setMapping({});
+    setHierarchyOrder(null);
+    setRootName(null);
+    setDimName(null);
+    setCollisionMode("collapse");
+    setResult(null);
+    setBuildError(null);
+    setProgress(0);
+    setShowConfirm(false);
     setStep(2);
   };
+
 
   const handleGenerate = async () => {
     setShowConfirm(false); setProcessing(true); setProgress(0); setBuildError(null);

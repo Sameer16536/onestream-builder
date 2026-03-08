@@ -64,6 +64,9 @@ export function StepUpload({ onData }) {
   const handleSheetChange = async (name) => {
     if (name === selectedSheet) return;
     setSelectedSheet(name);
+    setPreview(null);          // clear immediately — prevents stale sheet data showing
+    setSheetErrors([]);
+    setSheetWarnings([]);
     setSwitching(true);
     try {
       const prev = await parseSheetPreview(wb, name, headerRow);
@@ -74,6 +77,7 @@ export function StepUpload({ onData }) {
     } catch (e) { setSheetErrors([e.message]); }
     setSwitching(false);
   };
+
 
   // ── Header row change ──────────────────────────────────────────────────────
   const handleHeaderRowChange = useCallback(async (i) => {
