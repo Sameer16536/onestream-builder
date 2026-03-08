@@ -7,6 +7,7 @@ export const C = {
 };
 
 export const LV_COLORS = [
-  "#4f7cff","#a855f7","#f5c842","#3ddc84",
-  "#ff7a45","#f472b6","#38bdf8","#fb923c",
+  "#4f7cff", "#a855f7", "#f5c842", "#3ddc84",
+  "#ff7a45", "#f472b6", "#38bdf8", "#fb923c",
+  "#34d399", "#e879f9",
 ];

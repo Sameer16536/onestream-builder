@@ -9,20 +9,33 @@ async function getXLSX() {
 }
 
 // Read the raw file into an XLSX workbook object.
+// Supports .xlsx / .xls (binary) and .csv (plaintext).
 // The workbook is kept in state — we never store the full parsed data unless needed.
 export async function parseWorkbook(file) {
   const XLSX = await getXLSX();
+  const isCsv = file.name.toLowerCase().endsWith(".csv");
+
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = e => {
       try {
-        resolve(XLSX.read(e.target.result, { type: "array" }));
+        if (isCsv) {
+          // XLSX can parse CSV from a string — produces the same wb.Sheets structure
+          const wb = XLSX.read(e.target.result, { type: "string", raw: false });
+          resolve(wb);
+        } else {
+          resolve(XLSX.read(e.target.result, { type: "array" }));
+        }
       } catch (err) {
-        reject(new Error(`Could not parse Excel file: ${err.message}`));
+        reject(new Error(`Could not parse file: ${err.message}`));
       }
     };
     reader.onerror = () => reject(new Error("Failed to read file."));
-    reader.readAsArrayBuffer(file);
+    if (isCsv) {
+      reader.readAsText(file);
+    } else {
+      reader.readAsArrayBuffer(file);
+    }
   });
 }
 

@@ -10,7 +10,7 @@ export function StepLevels({ onSet }) {
     <div>
       <SectionLabel n="2" label="Hierarchy Depth" sub="How many levels does this dimension have?" />
       <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 20 }}>
-        {[2, 3, 4, 5, 6, 7, 8].map(v => (
+        {[2, 3, 4, 5, 6, 7, 8, 9, 10].map(v => (
           <div
             key={v} onClick={() => setN(v)}
             style={{
