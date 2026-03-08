@@ -9,7 +9,7 @@ const C = {
   gold: "#f5c842", success: "#3ddc84", danger: "#ff5a5a", warn: "#f59e0b",
   text: "#e8eaff", textMuted: "#6b74a8", textDim: "#3a3f68",
 };
-const LV_COLORS = ["#4f7cff","#a855f7","#f5c842","#3ddc84","#ff7a45","#f472b6","#38bdf8","#fb923c"];
+const LV_COLORS = ["#4f7cff", "#a855f7", "#f5c842", "#3ddc84", "#ff7a45", "#f472b6", "#38bdf8", "#fb923c"];
 
 // ─── Normalization ────────────────────────────────────────────────────────────
 function normalizeName(value) {
@@ -25,8 +25,8 @@ function normalizeName(value) {
 function escapeXml(value) {
   if (!value) return "";
   return String(value).trim()
-    .replace(/&/g,"&amp;").replace(/</g,"&lt;")
-    .replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&apos;");
+    .replace(/&/g, "&amp;").replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&apos;");
 }
 
 // ─── Build Hierarchy (with cross-level collision resolution) ──────────────────
@@ -39,12 +39,12 @@ function escapeXml(value) {
 //   Within the same level, duplicates are just deduplicated (same member, same parent path).
 //
 function buildHierarchy(rows, mapping, hierarchyOrder, rootName) {
-  const members     = {};
+  const members = {};
   const relationships = [];
-  const relPairs    = new Set();
-  const warnings    = [];
-  const collisions  = []; // { rawName, levels: [L1, L3, ...] }
-  const safeKey     = n => (n ? n.toLowerCase() : null);
+  const relPairs = new Set();
+  const warnings = [];
+  const collisions = []; // { rawName, levels: [L1, L3, ...] }
+  const safeKey = n => (n ? n.toLowerCase() : null);
 
   // ── Pass 1: figure out which normalized names appear in multiple levels ──
   // levelMembersMap[level] = Set of normalizedNames
@@ -151,7 +151,7 @@ function buildHierarchy(rows, mapping, hierarchyOrder, rootName) {
 function generateMemberXml(members, dimName) {
   return [
     `<?xml version="1.0" encoding="UTF-8"?>`,
-    `<members dimension="${escapeXml(dimName)}">`,
+    `<members>`,
     ...Object.values(members).map(m =>
       `  <member name="${escapeXml(m.name)}" description="${escapeXml(m.desc)}" displayMemberGroup="Everyone"></member>`
     ),
@@ -161,7 +161,7 @@ function generateMemberXml(members, dimName) {
 function generateRelXml(relationships, dimName) {
   return [
     `<?xml version="1.0" encoding="UTF-8"?>`,
-    `<relationships dimension="${escapeXml(dimName)}">`,
+    `<relationships>`,
     ...relationships.map(r =>
       `  <relationship parent="${escapeXml(r.parent)}" child="${escapeXml(r.child)}"></relationship>`
     ),
@@ -201,11 +201,11 @@ function parseSheet(wb, sheetName, headerRow = 0) {
 function Btn({ children, onClick, variant = "primary", disabled, small, style }) {
   const vs = {
     primary: { background: C.accent, color: "#fff", boxShadow: `0 4px 20px ${C.accentGlow}` },
-    ghost:   { background: C.surfaceHigh, color: C.text, border: `1px solid ${C.border}` },
+    ghost: { background: C.surfaceHigh, color: C.text, border: `1px solid ${C.border}` },
     success: { background: C.success, color: "#000" },
-    gold:    { background: C.gold, color: "#000" },
-    danger:  { background: C.danger, color: "#fff" },
-    warn:    { background: C.warn, color: "#000" },
+    gold: { background: C.gold, color: "#000" },
+    danger: { background: C.danger, color: "#fff" },
+    warn: { background: C.warn, color: "#000" },
   };
   return (
     <button onClick={disabled ? undefined : onClick} style={{
@@ -242,7 +242,7 @@ function ExcelPreview({ excelData, mapping, headers }) {
       if (colIdx !== "" && colIdx !== undefined) {
         const idx = parseInt(colIdx);
         colToLevel[idx] = level;
-        colToColor[idx] = LV_COLORS[parseInt(level.replace("L","")) - 1];
+        colToColor[idx] = LV_COLORS[parseInt(level.replace("L", "")) - 1];
       }
     });
   }
@@ -278,7 +278,7 @@ function ExcelPreview({ excelData, mapping, headers }) {
                         {colToLevel[ci]}
                       </span>
                     )}
-                    {h || `Col ${ci+1}`}
+                    {h || `Col ${ci + 1}`}
                   </th>
                 );
               })}
@@ -320,15 +320,15 @@ function ExcelPreview({ excelData, mapping, headers }) {
 
 // ─── STEP 1: Upload + Sheet Picker ────────────────────────────────────────────
 function StepUpload({ onData }) {
-  const [dragging, setDragging]   = useState(false);
-  const [error, setError]         = useState("");
-  const [loading, setLoading]     = useState(false);
-  const [wb, setWb]               = useState(null);
-  const [fileName, setFileName]   = useState("");
+  const [dragging, setDragging] = useState(false);
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [wb, setWb] = useState(null);
+  const [fileName, setFileName] = useState("");
   const [sheetNames, setSheetNames] = useState([]);
   const [selectedSheet, setSelectedSheet] = useState("");
   const [headerRow, setHeaderRow] = useState(0);
-  const [preview, setPreview]     = useState(null);
+  const [preview, setPreview] = useState(null);
   const inputRef = useRef();
 
   const handleFile = async (f) => {
@@ -421,13 +421,13 @@ function StepUpload({ onData }) {
           <div style={{ marginBottom: 18 }}>
             <div style={{ fontSize: 12, color: C.textMuted, marginBottom: 10, fontWeight: 700 }}>HEADER ROW</div>
             <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-              {[0,1,2,3,4,5,6,7].map(i => (
+              {[0, 1, 2, 3, 4, 5, 6, 7].map(i => (
                 <div key={i} onClick={() => handleHeaderRowChange(i)} style={{
                   padding: "6px 14px", borderRadius: 8, cursor: "pointer", fontWeight: 700, fontSize: 13,
                   background: headerRow === i ? C.accentDim : C.bg,
                   color: headerRow === i ? C.accent : C.textMuted,
                   border: `1px solid ${headerRow === i ? C.accent : C.border}`, transition: "all 0.15s",
-                }}>Row {i+1}</div>
+                }}>Row {i + 1}</div>
               ))}
             </div>
           </div>
@@ -443,7 +443,7 @@ function StepUpload({ onData }) {
                       borderBottom: `1px solid ${C.border}`
                     }}>
                       <td style={{ padding: "6px 10px", color: ri === headerRow ? C.accent : C.textDim, fontFamily: "monospace", fontSize: 10, borderRight: `1px solid ${C.border}`, minWidth: 60, fontWeight: ri === headerRow ? 700 : 400 }}>
-                        {ri === headerRow ? "► HEADER" : `row ${ri+1}`}
+                        {ri === headerRow ? "► HEADER" : `row ${ri + 1}`}
                       </td>
                       {(Array.isArray(row) ? row : []).slice(0, 9).map((cell, ci) => (
                         <td key={ci} style={{ padding: "6px 10px", color: ri === headerRow ? C.accent : C.text, fontWeight: ri === headerRow ? 700 : 400, whiteSpace: "nowrap" }}>
@@ -457,7 +457,7 @@ function StepUpload({ onData }) {
             </div>
           )}
 
-          <Btn onClick={confirm}>Use "{selectedSheet}" · Row {headerRow+1} as Header →</Btn>
+          <Btn onClick={confirm}>Use "{selectedSheet}" · Row {headerRow + 1} as Header →</Btn>
         </div>
       )}
 
@@ -474,7 +474,7 @@ function StepLevels({ onSet }) {
     <div>
       <SectionLabel n="2" label="Hierarchy Depth" sub="How many levels does this dimension have?" />
       <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 20 }}>
-        {[2,3,4,5,6,7,8].map(v => (
+        {[2, 3, 4, 5, 6, 7, 8].map(v => (
           <div key={v} onClick={() => setN(v)} style={{
             width: 62, height: 62, borderRadius: 12, display: "flex", flexDirection: "column",
             alignItems: "center", justifyContent: "center", cursor: "pointer",
@@ -489,7 +489,7 @@ function StepLevels({ onSet }) {
       </div>
       <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 20 }}>
         {Array.from({ length: n }, (_, i) => (
-          <span key={i} style={{ background: LV_COLORS[i]+"22", color: LV_COLORS[i], border: `1px solid ${LV_COLORS[i]}44`, borderRadius: 6, padding: "3px 12px", fontWeight: 700, fontSize: 13 }}>L{i+1}</span>
+          <span key={i} style={{ background: LV_COLORS[i] + "22", color: LV_COLORS[i], border: `1px solid ${LV_COLORS[i]}44`, borderRadius: 6, padding: "3px 12px", fontWeight: 700, fontSize: 13 }}>L{i + 1}</span>
         ))}
       </div>
       <Btn onClick={() => onSet(n)}>Continue →</Btn>
@@ -499,14 +499,14 @@ function StepLevels({ onSet }) {
 
 // ─── STEP 3: Column Mapping ───────────────────────────────────────────────────
 function StepMapping({ headers, maxLevels, onSet, mapping, setMapping }) {
-  const allMapped = Array.from({ length: maxLevels }, (_, i) => `L${i+1}`).every(l => mapping[l] !== "");
+  const allMapped = Array.from({ length: maxLevels }, (_, i) => `L${i + 1}`).every(l => mapping[l] !== "");
 
   return (
     <div>
       <SectionLabel n="3" label="Map Columns to Levels" sub="Select which Excel column maps to each level. The preview panel highlights live." />
       <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 18 }}>
         {Array.from({ length: maxLevels }, (_, i) => {
-          const level = `L${i+1}`;
+          const level = `L${i + 1}`;
           const color = LV_COLORS[i];
           const mapped = mapping[level] !== "";
           return (
@@ -535,7 +535,7 @@ function StepMapping({ headers, maxLevels, onSet, mapping, setMapping }) {
                 >
                   <option value="">— select a column —</option>
                   {headers.map((h, idx) => (
-                    <option key={idx} value={idx}>{h || `Column ${idx+1}`}</option>
+                    <option key={idx} value={idx}>{h || `Column ${idx + 1}`}</option>
                   ))}
                 </select>
               </div>
@@ -549,12 +549,12 @@ function StepMapping({ headers, maxLevels, onSet, mapping, setMapping }) {
         <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 18, padding: 12, background: C.surfaceHigh, borderRadius: 10, border: `1px solid ${C.border}` }}>
           <span style={{ fontSize: 11, color: C.textMuted, alignSelf: "center", marginRight: 4 }}>Mapped:</span>
           {Array.from({ length: maxLevels }, (_, i) => {
-            const level = `L${i+1}`;
+            const level = `L${i + 1}`;
             if (mapping[level] === "") return null;
             const color = LV_COLORS[i];
-            const colName = headers[parseInt(mapping[level])] || `Col ${parseInt(mapping[level])+1}`;
+            const colName = headers[parseInt(mapping[level])] || `Col ${parseInt(mapping[level]) + 1}`;
             return (
-              <span key={level} style={{ display: "inline-flex", alignItems: "center", gap: 4, background: color+"22", border: `1px solid ${color}55`, borderRadius: 20, padding: "3px 10px", fontSize: 12 }}>
+              <span key={level} style={{ display: "inline-flex", alignItems: "center", gap: 4, background: color + "22", border: `1px solid ${color}55`, borderRadius: 20, padding: "3px 10px", fontSize: 12 }}>
                 <span style={{ fontWeight: 800, color }}>{level}</span>
                 <span style={{ color: C.textDim }}>→</span>
                 <span style={{ color, fontWeight: 600 }}>{colName}</span>
@@ -573,7 +573,7 @@ function StepMapping({ headers, maxLevels, onSet, mapping, setMapping }) {
 
 // ─── STEP 4: Hierarchy Order ──────────────────────────────────────────────────
 function StepHierarchyOrder({ maxLevels, mapping, headers, onSet }) {
-  const levels = Array.from({ length: maxLevels }, (_, i) => `L${i+1}`);
+  const levels = Array.from({ length: maxLevels }, (_, i) => `L${i + 1}`);
   const [order, setOrder] = useState([...levels]);
   const [dragIdx, setDragIdx] = useState(null);
   const [overIdx, setOverIdx] = useState(null);
@@ -599,7 +599,7 @@ function StepHierarchyOrder({ maxLevels, mapping, headers, onSet }) {
                 onDragEnd={() => { setDragIdx(null); setOverIdx(null); }}
                 style={{
                   padding: "10px 16px", borderRadius: 12, cursor: "grab", userSelect: "none",
-                  background: color+"22", border: `2px solid ${isOver ? color : color+"55"}`,
+                  background: color + "22", border: `2px solid ${isOver ? color : color + "55"}`,
                   boxShadow: isOver ? `0 0 22px ${color}55` : "none",
                   transform: isOver ? "scale(1.07)" : "scale(1)", transition: "all 0.15s",
                 }}
@@ -616,7 +616,7 @@ function StepHierarchyOrder({ maxLevels, mapping, headers, onSet }) {
         <div style={{ fontSize: 11, color: C.textMuted, marginBottom: 8, fontFamily: "monospace", letterSpacing: "0.06em" }}>PARENT RELATIONSHIPS</div>
         {order.map((level, idx) => {
           const color = LV_COLORS[levels.indexOf(level)];
-          const parentLevel = idx > 0 ? order[idx-1] : null;
+          const parentLevel = idx > 0 ? order[idx - 1] : null;
           const parentColor = parentLevel ? LV_COLORS[levels.indexOf(parentLevel)] : null;
           const colName = headers[parseInt(mapping[level])] || level;
           return (
@@ -640,7 +640,7 @@ function StepHierarchyOrder({ maxLevels, mapping, headers, onSet }) {
 // ─── STEP 5: Config ───────────────────────────────────────────────────────────
 function StepConfig({ onSet }) {
   const [rootName, setRootName] = useState("Region");
-  const [dimName, setDimName]   = useState("Region");
+  const [dimName, setDimName] = useState("Region");
   const inputStyle = {
     width: "100%", padding: "10px 14px", borderRadius: 8, fontSize: 14,
     background: C.bg, border: `1px solid ${C.borderBright}`, color: C.text,
@@ -659,11 +659,11 @@ function StepConfig({ onSet }) {
           <label style={{ fontSize: 12, color: C.textMuted, display: "block", marginBottom: 6 }}>Dimension Name</label>
           <input value={dimName} onChange={e => setDimName(e.target.value)} style={inputStyle} placeholder="e.g. Region, Entity" />
           <div style={{ fontSize: 11, color: C.textDim, marginTop: 4 }}>
-            Output: <span style={{ color: C.accent }}>{dimName||"Dim"}MEM.xml</span> + <span style={{ color: C.accent }}>{dimName||"Dim"}REL.xml</span>
+            Output: <span style={{ color: C.accent }}>{dimName || "Dim"}MEM.xml</span> + <span style={{ color: C.accent }}>{dimName || "Dim"}REL.xml</span>
           </div>
         </div>
       </div>
-      <Btn onClick={() => onSet(rootName.trim()||"Root", dimName.trim()||"Dimension")} disabled={!rootName.trim()}>
+      <Btn onClick={() => onSet(rootName.trim() || "Root", dimName.trim() || "Dimension")} disabled={!rootName.trim()}>
         Review & Generate →
       </Btn>
     </div>
@@ -687,7 +687,7 @@ function ConfirmModal({ headers, mapping, hierarchyOrder, rowCount, sheetName, r
           <h2 style={{ color: C.text, fontSize: 20, fontWeight: 800, margin: 0 }}>Confirm Before Generating</h2>
         </div>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 16 }}>
-          {[["Source rows", rowCount.toLocaleString()], ["Sheet", sheetName], ["Root member", rootName], ["Dimension", dimName], ["Levels", levels.length]].map(([k,v]) => (
+          {[["Source rows", rowCount.toLocaleString()], ["Sheet", sheetName], ["Root member", rootName], ["Dimension", dimName], ["Levels", levels.length]].map(([k, v]) => (
             <div key={k} style={{ padding: "9px 12px", background: C.surfaceHigh, borderRadius: 8 }}>
               <div style={{ fontSize: 11, color: C.textMuted, marginBottom: 2 }}>{k}</div>
               <div style={{ color: C.gold, fontWeight: 700, fontSize: 13 }}>{v}</div>
@@ -700,10 +700,10 @@ function ConfirmModal({ headers, mapping, hierarchyOrder, rowCount, sheetName, r
             const colIdx = parseInt(mapping[level]);
             const color = LV_COLORS[i];
             return (
-              <span key={level} style={{ display: "inline-flex", alignItems: "center", gap: 4, background: color+"22", border: `1px solid ${color}55`, borderRadius: 20, padding: "4px 10px", fontSize: 12 }}>
+              <span key={level} style={{ display: "inline-flex", alignItems: "center", gap: 4, background: color + "22", border: `1px solid ${color}55`, borderRadius: 20, padding: "4px 10px", fontSize: 12 }}>
                 <span style={{ fontWeight: 800, color }}>{level}</span>
                 <span style={{ color: C.textDim }}>→</span>
-                <span style={{ color, fontWeight: 600 }}>{headers[colIdx]||`Col ${colIdx+1}`}</span>
+                <span style={{ color, fontWeight: 600 }}>{headers[colIdx] || `Col ${colIdx + 1}`}</span>
               </span>
             );
           })}
@@ -716,7 +716,7 @@ function ConfirmModal({ headers, mapping, hierarchyOrder, rowCount, sheetName, r
             const color = LV_COLORS[levels.indexOf(lv)];
             return (
               <span key={lv} style={{ display: "inline-flex", alignItems: "center", gap: 5 }}>
-                <span style={{ background: color+"22", color, border: `1px solid ${color}44`, borderRadius: 6, padding: "3px 10px", fontSize: 12, fontWeight: 700 }}>{lv}</span>
+                <span style={{ background: color + "22", color, border: `1px solid ${color}44`, borderRadius: 6, padding: "3px 10px", fontSize: 12, fontWeight: 700 }}>{lv}</span>
                 {idx < hierarchyOrder.length - 1 && <span style={{ color: C.textDim }}>→</span>}
               </span>
             );
@@ -735,8 +735,8 @@ function ConfirmModal({ headers, mapping, hierarchyOrder, rowCount, sheetName, r
 function ResultPanel({ result, dimName, onReset }) {
   const { members, relationships, warnings, collisions } = result;
   const memberList = Object.values(members);
-  const memberXml  = generateMemberXml(members, dimName);
-  const relXml     = generateRelXml(relationships, dimName);
+  const memberXml = generateMemberXml(members, dimName);
+  const relXml = generateRelXml(relationships, dimName);
   const [activeTab, setActiveTab] = useState(collisions.length > 0 ? "collisions" : "members");
 
   return (
@@ -746,18 +746,18 @@ function ResultPanel({ result, dimName, onReset }) {
         <h2 style={{ margin: 0, fontSize: 20, fontWeight: 800, color: C.success }}>✓ XML Ready to Download</h2>
         <p style={{ margin: "5px 0 0", fontSize: 13, color: C.textMuted }}>
           {memberList.length.toLocaleString()} members · {relationships.length.toLocaleString()} relationships · {warnings.length} skipped
-          {collisions.length > 0 && <span style={{ color: C.warn }}> · {collisions.length} name collision{collisions.length>1?"s":""} resolved</span>}
+          {collisions.length > 0 && <span style={{ color: C.warn }}> · {collisions.length} name collision{collisions.length > 1 ? "s" : ""} resolved</span>}
         </p>
       </div>
 
       <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 16 }}>
         {[
-          { label: "Members",       value: memberList.length,    color: C.accent },
+          { label: "Members", value: memberList.length, color: C.accent },
           { label: "Relationships", value: relationships.length, color: C.success },
-          { label: "Collisions",    value: collisions.length,    color: collisions.length > 0 ? C.warn : C.textDim },
-          { label: "Warnings",      value: warnings.length,      color: warnings.length > 0 ? C.danger : C.textDim },
+          { label: "Collisions", value: collisions.length, color: collisions.length > 0 ? C.warn : C.textDim },
+          { label: "Warnings", value: warnings.length, color: warnings.length > 0 ? C.danger : C.textDim },
         ].map(s => (
-          <div key={s.label} style={{ padding: "10px 16px", borderRadius: 10, background: s.color+"18", border: `1px solid ${s.color}44` }}>
+          <div key={s.label} style={{ padding: "10px 16px", borderRadius: 10, background: s.color + "18", border: `1px solid ${s.color}44` }}>
             <div style={{ fontWeight: 800, color: s.color, fontSize: 20 }}>{s.value}</div>
             <div style={{ fontSize: 11, color: C.textMuted }}>{s.label}</div>
           </div>
@@ -765,8 +765,8 @@ function ResultPanel({ result, dimName, onReset }) {
       </div>
 
       <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 18 }}>
-        <Btn variant="gold"    onClick={() => downloadFile(memberXml, `${dimName}MEM.xml`)}>⬇ {dimName}MEM.xml</Btn>
-        <Btn variant="primary" onClick={() => downloadFile(relXml,    `${dimName}REL.xml`)}>⬇ {dimName}REL.xml</Btn>
+        <Btn variant="gold" onClick={() => downloadFile(memberXml, `${dimName}MEM.xml`)}>⬇ {dimName}MEM.xml</Btn>
+        <Btn variant="primary" onClick={() => downloadFile(relXml, `${dimName}REL.xml`)}>⬇ {dimName}REL.xml</Btn>
         {warnings.length > 0 && (
           <Btn variant="ghost" onClick={() => downloadFile(warnings.join("\n"), `${dimName}_warnings.txt`, "text/plain")}>⬇ Warnings ({warnings.length})</Btn>
         )}
@@ -776,10 +776,10 @@ function ResultPanel({ result, dimName, onReset }) {
       <div>
         <div style={{ display: "flex", gap: 0, marginBottom: 0 }}>
           {[
-            { key: "members",       label: `Members (${memberList.length})` },
+            { key: "members", label: `Members (${memberList.length})` },
             { key: "relationships", label: `Relationships (${relationships.length})` },
-            { key: "collisions",    label: `Collisions (${collisions.length})` },
-            { key: "warnings",      label: `Warnings (${warnings.length})` },
+            { key: "collisions", label: `Collisions (${collisions.length})` },
+            { key: "warnings", label: `Warnings (${warnings.length})` },
           ].map(tab => (
             <button key={tab.key} onClick={() => setActiveTab(tab.key)} style={{
               padding: "8px 14px", border: "none", cursor: "pointer", fontFamily: "inherit",
@@ -799,22 +799,22 @@ function ResultPanel({ result, dimName, onReset }) {
               ? <div style={{ color: C.success, fontSize: 13 }}>✓ No cross-level name collisions found</div>
               : (
                 <div>
-                  <div style={{ fontSize: 12, color: C.warn, marginBottom: 12, padding: "8px 12px", background: C.warn+"15", borderRadius: 8, border: `1px solid ${C.warn}44` }}>
+                  <div style={{ fontSize: 12, color: C.warn, marginBottom: 12, padding: "8px 12px", background: C.warn + "15", borderRadius: 8, border: `1px solid ${C.warn}44` }}>
                     ⚠ These member names appeared in multiple levels. They have been renamed to <code style={{ color: C.accent }}>Name_Lx</code> to avoid OneStream conflicts.
                   </div>
                   {collisions.map((c, i) => (
                     <div key={i} style={{ marginBottom: 12, padding: "10px 14px", background: C.bg, borderRadius: 8, border: `1px solid ${C.border}` }}>
                       <div style={{ fontSize: 12, color: C.textMuted, marginBottom: 6 }}>
-                        Original name: <span style={{ color: C.text, fontWeight: 700 }}>{c.name}</span> appeared in levels: {c.levels.map((lv,li) => {
-                          const color = LV_COLORS[parseInt(lv.replace("L",""))-1];
-                          return <span key={lv} style={{ background: color+"22", color, border: `1px solid ${color}44`, borderRadius: 4, padding: "1px 7px", fontSize: 11, fontWeight: 700, marginLeft: 4 }}>{lv}</span>;
+                        Original name: <span style={{ color: C.text, fontWeight: 700 }}>{c.name}</span> appeared in levels: {c.levels.map((lv, li) => {
+                          const color = LV_COLORS[parseInt(lv.replace("L", "")) - 1];
+                          return <span key={lv} style={{ background: color + "22", color, border: `1px solid ${color}44`, borderRadius: 4, padding: "1px 7px", fontSize: 11, fontWeight: 700, marginLeft: 4 }}>{lv}</span>;
                         })}
                       </div>
                       <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                         {c.levels.map(lv => {
-                          const color = LV_COLORS[parseInt(lv.replace("L",""))-1];
+                          const color = LV_COLORS[parseInt(lv.replace("L", "")) - 1];
                           return (
-                            <div key={lv} style={{ display: "flex", alignItems: "center", gap: 6, background: color+"15", border: `1px solid ${color}33`, borderRadius: 6, padding: "4px 10px" }}>
+                            <div key={lv} style={{ display: "flex", alignItems: "center", gap: 6, background: color + "15", border: `1px solid ${color}33`, borderRadius: 6, padding: "4px 10px" }}>
                               <span style={{ fontSize: 10, color: C.textDim }}>was</span>
                               <span style={{ color: C.text, fontWeight: 600, fontSize: 12 }}>{c.name}</span>
                               <span style={{ fontSize: 10, color: C.textDim }}>→ now</span>
@@ -868,10 +868,10 @@ function StepSidebar({ step, sheetName }) {
         </div>
       )}
       {steps.map((label, i) => {
-        const n = i+1;
+        const n = i + 1;
         const done = step > n, active = step === n;
         return (
-          <div key={n} style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 12px", borderRadius: 8, background: active ? C.accentGlow : "transparent", border: `1px solid ${active ? C.accent+"44" : "transparent"}` }}>
+          <div key={n} style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 12px", borderRadius: 8, background: active ? C.accentGlow : "transparent", border: `1px solid ${active ? C.accent + "44" : "transparent"}` }}>
             <div style={{
               width: 24, height: 24, borderRadius: "50%", flexShrink: 0,
               display: "flex", alignItems: "center", justifyContent: "center",
@@ -890,17 +890,17 @@ function StepSidebar({ step, sheetName }) {
 
 // ─── App ──────────────────────────────────────────────────────────────────────
 export default function App() {
-  const [step, setStep]               = useState(1);
-  const [excelData, setExcelData]     = useState(null);
-  const [fileName, setFileName]       = useState("");
-  const [sheetName, setSheetName]     = useState("");
-  const [maxLevels, setMaxLevels]     = useState(null);
-  const [mapping, setMapping]         = useState({});
+  const [step, setStep] = useState(1);
+  const [excelData, setExcelData] = useState(null);
+  const [fileName, setFileName] = useState("");
+  const [sheetName, setSheetName] = useState("");
+  const [maxLevels, setMaxLevels] = useState(null);
+  const [mapping, setMapping] = useState({});
   const [hierarchyOrder, setHierarchyOrder] = useState(null);
-  const [rootName, setRootName]       = useState(null);
-  const [dimName, setDimName]         = useState(null);
+  const [rootName, setRootName] = useState(null);
+  const [dimName, setDimName] = useState(null);
   const [showConfirm, setShowConfirm] = useState(false);
-  const [result, setResult]           = useState(null);
+  const [result, setResult] = useState(null);
 
   const initMapping = (n) => {
     const m = {};
@@ -975,11 +975,11 @@ export default function App() {
               <div style={{ marginTop: 14 }}>
                 <div style={{ fontSize: 11, color: C.textMuted, fontFamily: "monospace", letterSpacing: "0.08em", marginBottom: 10 }}>COLUMN LEGEND</div>
                 <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                  {Object.entries(mapping).filter(([,v]) => v !== "").map(([level, colIdx]) => {
-                    const color = LV_COLORS[parseInt(level.replace("L",""))-1];
-                    const colName = excelData.headers[parseInt(colIdx)] || `Column ${parseInt(colIdx)+1}`;
+                  {Object.entries(mapping).filter(([, v]) => v !== "").map(([level, colIdx]) => {
+                    const color = LV_COLORS[parseInt(level.replace("L", "")) - 1];
+                    const colName = excelData.headers[parseInt(colIdx)] || `Column ${parseInt(colIdx) + 1}`;
                     return (
-                      <div key={level} style={{ display: "flex", alignItems: "center", gap: 8, padding: "6px 10px", background: color+"15", borderRadius: 8, border: `1px solid ${color}33` }}>
+                      <div key={level} style={{ display: "flex", alignItems: "center", gap: 8, padding: "6px 10px", background: color + "15", borderRadius: 8, border: `1px solid ${color}33` }}>
                         <div style={{ width: 8, height: 8, borderRadius: "50%", background: color, flexShrink: 0 }} />
                         <span style={{ fontWeight: 800, color, fontSize: 13 }}>{level}</span>
                         <span style={{ color: C.textMuted, fontSize: 12, flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{colName}</span>

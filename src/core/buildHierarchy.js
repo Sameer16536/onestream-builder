@@ -73,10 +73,17 @@ export async function buildHierarchyAsync(rows, mapping, hierarchyOrder, rootNam
       const addRel = (parent, child, ri, ancestors) => {
         if (!parent || !child) return;
         const pk = safeKey(parent), ck = safeKey(child);
+        const key = `${pk}::${ck}`;
+
+        // Same relationship already established — silently skip (normal for repeated rows)
+        if (relPairs.has(key)) return;
+
+        // Child already has a DIFFERENT parent — real hierarchy conflict
         if (assignedParent.has(ck)) {
           warnings.push(`Row ${ri}: SKIPPED — "${child}" already has a parent, cannot also be child of "${parent}"`);
           return;
         }
+
         if (ancestors.has(ck)) {
           warnings.push(`Row ${ri}: SKIPPED recursion — "${parent}" → "${child}"`);
           return;
@@ -85,13 +92,12 @@ export async function buildHierarchyAsync(rows, mapping, hierarchyOrder, rootNam
           warnings.push(`Row ${ri}: SKIPPED reverse-recursion — "${parent}" → "${child}"`);
           return;
         }
-        const key = `${pk}::${ck}`;
-        if (!relPairs.has(key)) {
-          relPairs.add(key);
-          assignedParent.add(ck);
-          relationships.push({ parent, child });
-        }
+
+        relPairs.add(key);
+        assignedParent.add(ck);
+        relationships.push({ parent, child });
       };
+
 
       // Root member
       const rootNorm = normalizeName(rootName) || rootName;
