@@ -335,8 +335,8 @@ export function StepUpload({ onData }) {
           {sheetErrors.map((e, i)   => <Alert key={i} type="error">{e}</Alert>)}
 
           <div style={{ marginTop: 16 }}>
-            <Btn onClick={confirm} disabled={sheetErrors.length > 0 || loading}>
-              {loading ? "⏳ Loading full data…" : `Use "${selectedSheet}" · Row ${headerRow + 1} as Header →`}
+            <Btn onClick={confirm} disabled={sheetErrors.length > 0 || loading || switching}>
+              {loading ? "⏳ Loading full data…" : switching ? "⏳ Switching sheet…" : `Use "${selectedSheet}" · Row ${headerRow + 1} as Header →`}
             </Btn>
           </div>
         </div>
