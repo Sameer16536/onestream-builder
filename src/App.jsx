@@ -2,11 +2,13 @@ import { useState } from "react";
 import { C } from "./theme";
 import { useWindowSize, BP } from "./hooks/useWindowSize";
 import { buildHierarchyAsync } from "./core/buildHierarchy";
+import { generateOneStreamXml } from "./core/utils";
 
 import { TopBar, StepSidebar, MobileStepBar } from "./components/layout/TopBar";
 import { ConfirmModal, ProcessingScreen } from "./components/layout/Modals";
 import { StepUpload } from "./components/upload/StepUpload";
 import { StepLevels, StepMapping, StepHierarchyOrder, StepConfig } from "./components/steps/Steps";
+import { StepProperties } from "./components/steps/StepProperties";
 import { ResultPanel } from "./components/results/ResultPanel";
 import { ExcelPreview, ColumnLegend } from "./components/shared/ExcelPreview";
 import { Alert } from "./components/shared/primitives";
@@ -21,9 +23,15 @@ export default function App() {
   const [maxLevels, setMaxLevels] = useState(null);
   const [mapping, setMapping] = useState({});
   const [hierarchyOrder, setHierarchyOrder] = useState(null);
+  // Step 5 — Properties
+  const [dimType, setDimType] = useState(null);
+  const [memberProps, setMemberProps] = useState(null);
+  // Step 6 — Config
   const [rootName, setRootName] = useState(null);
   const [dimName, setDimName] = useState(null);
+  const [inheritedDim, setInheritedDim] = useState(null);
   const [collisionMode, setCollisionMode] = useState("collapse");
+
   const [showConfirm, setShowConfirm] = useState(false);
   const [processing, setProcessing] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -47,7 +55,8 @@ export default function App() {
     setStep(1); setExcelData(null); setWb(null);
     setFileName(""); setSheetName("");
     setMaxLevels(null); setMapping({}); setHierarchyOrder(null);
-    setRootName(null); setDimName(null); setCollisionMode("collapse");
+    setDimType(null); setMemberProps(null);
+    setRootName(null); setDimName(null); setInheritedDim(null); setCollisionMode("collapse");
     setShowConfirm(false); setProcessing(false); setProgress(0);
     setResult(null); setBuildError(null); setShowPreviewDrawer(false);
   };
@@ -63,16 +72,16 @@ export default function App() {
     if (targetStep <= 1) {
       setExcelData(null); setWb(null); setFileName(""); setSheetName("");
       setMaxLevels(null); setMapping({}); setHierarchyOrder(null);
-      setRootName(null); setDimName(null); setCollisionMode("collapse");
+      setDimType(null); setMemberProps(null);
+      setRootName(null); setDimName(null); setInheritedDim(null); setCollisionMode("collapse");
     }
-    if (targetStep <= 2) { setMapping({}); setHierarchyOrder(null); setRootName(null); setDimName(null); }
-    if (targetStep <= 3) { setHierarchyOrder(null); setRootName(null); setDimName(null); }
-    if (targetStep <= 4) { setRootName(null); setDimName(null); setCollisionMode("collapse"); }
+    if (targetStep <= 2) { setMapping({}); setHierarchyOrder(null); setDimType(null); setMemberProps(null); setRootName(null); setDimName(null); setInheritedDim(null); }
+    if (targetStep <= 3) { setHierarchyOrder(null); setDimType(null); setMemberProps(null); setRootName(null); setDimName(null); setInheritedDim(null); }
+    if (targetStep <= 4) { setDimType(null); setMemberProps(null); setRootName(null); setDimName(null); setInheritedDim(null); }
+    if (targetStep <= 5) { setRootName(null); setDimName(null); setInheritedDim(null); setCollisionMode("collapse"); }
   };
 
   const handleUploadData = (data, workbook, name, sheet) => {
-    // ── Reset ALL downstream state so a sheet switch never carries over
-    // stale mapping / hierarchy / collision data from a previous run ──────────
     setExcelData(data);
     setWb(workbook);
     setFileName(name);
@@ -80,9 +89,8 @@ export default function App() {
     setMaxLevels(null);
     setMapping({});
     setHierarchyOrder(null);
-    setRootName(null);
-    setDimName(null);
-    setCollisionMode("collapse");
+    setDimType(null); setMemberProps(null);
+    setRootName(null); setDimName(null); setInheritedDim(null); setCollisionMode("collapse");
     setResult(null);
     setBuildError(null);
     setProgress(0);
@@ -90,14 +98,13 @@ export default function App() {
     setStep(2);
   };
 
-
   const handleGenerate = async () => {
     setShowConfirm(false); setProcessing(true); setProgress(0); setBuildError(null);
     try {
       const r = await buildHierarchyAsync(
         excelData.rows, mapping, hierarchyOrder, rootName, collisionMode, setProgress
       );
-      setResult(r); setStep(6);
+      setResult(r); setStep(7);
     } catch (e) { setBuildError(e.message); }
     finally { setProcessing(false); }
   };
@@ -200,20 +207,32 @@ export default function App() {
                 />
               )}
               {step === 5 && (
+                <StepProperties
+                  initialDimType={dimType}
+                  initialProps={memberProps}
+                  onSet={(type, props) => { setDimType(type); setMemberProps(props); setStep(6); }}
+                />
+              )}
+              {step === 6 && (
                 <StepConfig
                   initialRootName={rootName || "Region"}
                   initialDimName={dimName || "Region"}
                   initialCollisionMode={collisionMode || "collapse"}
-                  onSet={(root, dim, mode) => {
-                    setRootName(root); setDimName(dim); setCollisionMode(mode);
+                  dimType={dimType}
+                  initialInheritedDim={inheritedDim}
+                  onSet={(root, dim, mode, inh) => {
+                    setRootName(root); setDimName(dim); setCollisionMode(mode); setInheritedDim(inh);
                     setShowConfirm(true);
                   }}
                 />
               )}
-              {step === 6 && result && (
+              {step === 7 && result && (
                 <ResultPanel
                   result={result}
                   dimName={dimName}
+                  dimType={dimType}
+                  inheritedDim={inheritedDim}
+                  memberProps={memberProps}
                   collisionMode={collisionMode}
                   onReset={reset}
                 />

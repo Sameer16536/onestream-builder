@@ -1,14 +1,26 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { C, LV_COLORS } from "../../theme";
 import { MAX_MEMBER_NAME } from "../../constants";
-import { generateMemberXml, generateRelXml, downloadFile } from "../../core/utils";
+import { generateOneStreamXml, downloadFile } from "../../core/utils";
 import { Btn, Alert } from "../shared/primitives";
 
-export function ResultPanel({ result, dimName, collisionMode, onReset }) {
+export function ResultPanel({ result, dimName, dimType, inheritedDim, memberProps, collisionMode, onReset }) {
   const { members, relationships, warnings, collisions, dataQuality } = result;
   const memberList = Object.values(members);
-  const memberXml  = generateMemberXml(members, dimName);
-  const relXml     = generateRelXml(relationships, dimName);
+
+  // ── XML is generated LAZILY — only when the user clicks download ──────────
+  // This avoids building a potentially huge string on every render.
+  const buildXml = useCallback(() => generateOneStreamXml({
+    members,
+    relationships,
+    dimType: dimType || "UD1",
+    dimName: dimName || "Dimension",
+    inheritedDim: inheritedDim || `Root${dimType || "UD1"}Dim`,
+    memberProps: memberProps || {},
+    aggregationWeight: memberProps?.aggregationWeight ?? "1.0",
+  }), [members, relationships, dimType, dimName, inheritedDim, memberProps]);
+
+  const handleDownload = () => downloadFile(buildXml(), `${dimName}.xml`);
 
   const hasIssues = collisions.length > 0 || warnings.length > 0 ||
     dataQuality.emptyRows > 0 || dataQuality.truncatedNames.length > 0 ||
@@ -34,6 +46,7 @@ export function ResultPanel({ result, dimName, collisionMode, onReset }) {
         <div style={{ fontSize: 11, color: C.textMuted, fontFamily: "monospace", letterSpacing: "0.1em", marginBottom: 4 }}>COMPLETE</div>
         <h2 style={{ margin: 0, fontSize: 20, fontWeight: 800, color: C.success }}>✓ XML Ready to Download</h2>
         <p style={{ margin: "5px 0 0", fontSize: 13, color: C.textMuted }}>
+          <span style={{ fontWeight: 700, color: C.accent }}>{dimType}</span> · {dimName} ·{" "}
           {memberList.length.toLocaleString()} members · {relationships.length.toLocaleString()} relationships
           {collisionMode === "collapse" && dataQuality.collapsedDupes.length > 0 && (
             <span style={{ color: C.warn }}> · {dataQuality.collapsedDupes.length} duplicate(s) collapsed</span>
@@ -63,14 +76,14 @@ export function ResultPanel({ result, dimName, collisionMode, onReset }) {
         ))}
       </div>
 
-      {/* Download buttons */}
-      <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 18 }}>
-        <Btn variant="gold"    onClick={() => downloadFile(memberXml, `${dimName}MEM.xml`)}>⬇ {dimName}MEM.xml</Btn>
-        <Btn variant="primary" onClick={() => downloadFile(relXml,    `${dimName}REL.xml`)}>⬇ {dimName}REL.xml</Btn>
-        <Btn variant="ghost"   onClick={() => downloadFile([memberXml, "\n\n", relXml].join(""), `${dimName}_both.xml`)}>⬇ Combined XML</Btn>
+      {/* Single download button */}
+      <div style={{ marginBottom: 18 }}>
+        <Btn variant="gold" onClick={handleDownload}>
+          ⬇ Download {dimName}.xml
+        </Btn>
       </div>
 
-      {/* Tabs */}
+      {/* Tabs — members, rels, quality only (no XML preview) */}
       <div>
         <div style={{ display: "flex", gap: 0 }}>
           {tabs.map(tab => (
@@ -100,17 +113,31 @@ export function ResultPanel({ result, dimName, collisionMode, onReset }) {
           background: C.surfaceHigh, border: `1px solid ${C.border}`,
           borderRadius: "0 8px 8px 8px", padding: 14, maxHeight: 340, overflowY: "auto",
         }}>
-          {activeTab === "members" && memberXml.split("\n").slice(0, 80).map((line, i) => (
-            <div key={i} style={{ fontFamily: "monospace", fontSize: 11, color: line.includes("<member") ? C.text : C.textMuted, marginBottom: 1, whiteSpace: "pre" }}>
-              {line}
+          {/* Members — capped at 200 rows, text-only, no DOM bloat */}
+          {activeTab === "members" && (
+            <div>
+              {memberList.slice(0, 200).map((m, i) => (
+                <div key={i} style={{ fontFamily: "monospace", fontSize: 11, color: C.textMuted, marginBottom: 1 }}>
+                  <span style={{ color: C.text }}>{m.name}</span>
+                  {m.desc !== m.name && <span style={{ color: C.textDim }}> — {m.desc}</span>}
+                </div>
+              ))}
+              {memberList.length > 200 && <More n={memberList.length - 200} />}
             </div>
-          ))}
+          )}
 
-          {activeTab === "relationships" && relXml.split("\n").slice(0, 80).map((line, i) => (
-            <div key={i} style={{ fontFamily: "monospace", fontSize: 11, color: line.includes("<relationship") ? C.text : C.textMuted, marginBottom: 1, whiteSpace: "pre" }}>
-              {line}
+          {/* Relationships — capped at 200 */}
+          {activeTab === "relationships" && (
+            <div>
+              {relationships.slice(0, 200).map((r, i) => (
+                <div key={i} style={{ fontFamily: "monospace", fontSize: 11, color: C.textMuted, marginBottom: 1 }}>
+                  <span style={{ color: C.textDim }}>parent=</span><span style={{ color: C.text }}>{r.parent}</span>
+                  <span style={{ color: C.textDim }}> → child=</span><span style={{ color: C.accent }}>{r.child}</span>
+                </div>
+              ))}
+              {relationships.length > 200 && <More n={relationships.length - 200} />}
             </div>
-          ))}
+          )}
 
           {activeTab === "quality" && <QualityReport result={result} dimName={dimName} collisionMode={collisionMode} />}
         </div>
@@ -133,10 +160,9 @@ function QualityReport({ result, dimName, collisionMode }) {
     <div>
       {!hasIssues && <Alert type="success">No data quality issues found. Clean hierarchy!</Alert>}
 
-      {/* Collapse report */}
       {collisionMode === "collapse" && dataQuality.collapsedDupes.length > 0 && (
         <Section title={`⚡ Collapsed Consecutive Duplicates (${dataQuality.collapsedDupes.length})`} color={C.warn}>
-          <Alert type="info">These values appeared identically in consecutive levels and were skipped — the next unique value attaches directly to the last distinct parent.</Alert>
+          <Alert type="info">These values appeared identically in consecutive levels and were skipped.</Alert>
           {dataQuality.collapsedDupes.slice(0, 15).map((d, i) => (
             <div key={i} style={{ fontSize: 11, fontFamily: "monospace", color: C.textMuted, marginBottom: 3, padding: "3px 10px", background: C.bg, borderRadius: 5 }}>
               Row {d.rowIndex} · <span style={{ color: C.warn }}>{d.level}</span> · skipped "<span style={{ color: C.text }}>{d.value}</span>"
@@ -146,7 +172,6 @@ function QualityReport({ result, dimName, collisionMode }) {
         </Section>
       )}
 
-      {/* Rename report */}
       {collisionMode === "rename" && collisions.length > 0 && (
         <Section title={`🏷 Cross-Level Name Collisions Renamed (${collisions.length})`} color={C.warn}>
           <Alert type="warn">These names appeared in multiple levels and were renamed with a level suffix.</Alert>
@@ -177,7 +202,6 @@ function QualityReport({ result, dimName, collisionMode }) {
         </Section>
       )}
 
-      {/* Truncated names */}
       {dataQuality.truncatedNames.length > 0 && (
         <Section title={`✂ Truncated Names (${dataQuality.truncatedNames.length})`} color={C.warn}>
           <Alert type="warn">Exceeded OneStream's {MAX_MEMBER_NAME}-character limit and were truncated.</Alert>
@@ -193,14 +217,12 @@ function QualityReport({ result, dimName, collisionMode }) {
         </Section>
       )}
 
-      {/* Empty rows */}
       {dataQuality.emptyRows > 0 && (
         <Section title={`Empty Rows Skipped: ${dataQuality.emptyRows}`} color={C.textMuted}>
           <Alert type="info">Rows where all mapped columns were blank were skipped automatically.</Alert>
         </Section>
       )}
 
-      {/* Warnings / skipped rows */}
       {warnings.length > 0 && (
         <Section title={`🔄 Skipped Rows (${warnings.length})`} color={C.danger}>
           {warnings.slice(0, 20).map((w, i) => (
@@ -228,5 +250,5 @@ function Section({ title, color, children }) {
 }
 
 function More({ n }) {
-  return <div style={{ fontSize: 11, color: C.textDim, marginTop: 4 }}>…and {n} more</div>;
+  return <div style={{ fontSize: 11, color: C.textDim, marginTop: 4 }}>…and {n.toLocaleString()} more</div>;
 }

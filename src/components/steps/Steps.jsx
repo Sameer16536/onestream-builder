@@ -220,11 +220,13 @@ export function StepHierarchyOrder({ maxLevels, mapping, headers, onSet, initial
   );
 }
 
-// ─── Step 5: Config + Collision Mode ──────────────────────────────────────────
-export function StepConfig({ onSet, initialRootName = "Region", initialDimName = "Region", initialCollisionMode = "collapse" }) {
+// ─── Step 6: Config + Collision Mode ──────────────────────────────────────────
+export function StepConfig({ onSet, initialRootName = "Region", initialDimName = "Region", initialCollisionMode = "collapse", dimType, initialInheritedDim }) {
+  const defaultInherited = initialInheritedDim || (dimType ? `Root${dimType}Dim` : "RootUD1Dim");
   const [rootName,      setRootName]      = useState(initialRootName);
   const [dimName,       setDimName]       = useState(initialDimName);
   const [collisionMode, setCollisionMode] = useState(initialCollisionMode);
+  const [inheritedDim,  setInheritedDim]  = useState(defaultInherited);
 
   const inputStyle = {
     width: "100%", padding: "10px 14px", borderRadius: 8, fontSize: 14,
@@ -251,7 +253,7 @@ export function StepConfig({ onSet, initialRootName = "Region", initialDimName =
 
   return (
     <div>
-      <SectionLabel n="5" label="Dimension, Root & Output Mode" />
+      <SectionLabel n="6" label="Dimension, Root & Output Mode" />
 
       {/* Mode picker */}
       <div style={{ marginBottom: 24 }}>
@@ -313,15 +315,20 @@ export function StepConfig({ onSet, initialRootName = "Region", initialDimName =
           <input value={dimName} onChange={e => setDimName(e.target.value)} style={inputStyle} placeholder="e.g. Region, Entity" />
           <div style={{ fontSize: 11, color: C.textDim, marginTop: 4 }}>
             Output:{" "}
-            <span style={{ color: C.accent }}>{dimName || "Dim"}MEM.xml</span>
-            {" "}+{" "}
-            <span style={{ color: C.accent }}>{dimName || "Dim"}REL.xml</span>
+            <span style={{ color: C.accent }}>{dimName || "Dim"}.xml</span>
           </div>
         </div>
+        {dimType !== "Entity" && (
+          <div>
+            <label style={{ fontSize: 12, color: C.textMuted, display: "block", marginBottom: 6 }}>Inherited Dimension</label>
+            <input value={inheritedDim} onChange={e => setInheritedDim(e.target.value)} style={inputStyle} placeholder={`Root${dimType || "UD1"}Dim`} />
+            <div style={{ fontSize: 11, color: C.textDim, marginTop: 4 }}>The base dimension this one inherits from</div>
+          </div>
+        )}
       </div>
 
       <Btn
-        onClick={() => onSet(rootName.trim() || "Root", dimName.trim() || "Dimension", collisionMode)}
+        onClick={() => onSet(rootName.trim() || "Root", dimName.trim() || "Dimension", collisionMode, inheritedDim.trim())}
         disabled={!rootName.trim()}
       >
         Review & Generate →

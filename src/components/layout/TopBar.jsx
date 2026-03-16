@@ -57,7 +57,7 @@ export function TopBar({ fileName, sheetName, processing, onReset }) {
 }
 
 export function StepSidebar({ step, sheetName, onNavigate }) {
-  const steps = ["Upload", "Levels", "Map Columns", "Order", "Config"];
+  const steps = ["Upload", "Levels", "Map Columns", "Order", "Properties", "Config"];
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
       {sheetName && (
@@ -126,7 +126,7 @@ export function StepSidebar({ step, sheetName, onNavigate }) {
 
 // Mobile step indicator — compact horizontal dots
 export function MobileStepBar({ step }) {
-  const steps = ["Upload", "Levels", "Columns", "Order", "Config"];
+  const steps = ["Upload", "Levels", "Columns", "Order", "Props", "Config"];
   return (
     <div style={{
       display: "flex", alignItems: "center", justifyContent: "center",
