@@ -318,13 +318,11 @@ export function StepConfig({ onSet, initialRootName = "Region", initialDimName =
             <span style={{ color: C.accent }}>{dimName || "Dim"}.xml</span>
           </div>
         </div>
-        {dimType !== "Entity" && (
-          <div>
-            <label style={{ fontSize: 12, color: C.textMuted, display: "block", marginBottom: 6 }}>Inherited Dimension</label>
-            <input value={inheritedDim} onChange={e => setInheritedDim(e.target.value)} style={inputStyle} placeholder={`Root${dimType || "UD1"}Dim`} />
-            <div style={{ fontSize: 11, color: C.textDim, marginTop: 4 }}>The base dimension this one inherits from</div>
-          </div>
-        )}
+        <div>
+          <label style={{ fontSize: 12, color: C.textMuted, display: "block", marginBottom: 6 }}>Inherited Dimension</label>
+          <input value={inheritedDim} onChange={e => setInheritedDim(e.target.value)} style={inputStyle} placeholder={`Root${dimType || "UD1"}Dim`} />
+          <div style={{ fontSize: 11, color: C.textDim, marginTop: 4 }}>The base dimension this one inherits from</div>
+        </div>
       </div>
 
       <Btn

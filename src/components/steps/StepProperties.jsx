@@ -191,12 +191,49 @@ function EntityPropsForm({ props, set }) {
   );
 }
 
+// ── Account property form ─────────────────────────────────────────────────────
+function AccountPropsForm({ props, set }) {
+  return (
+    <>
+      <div style={{ fontSize: 11, color: C.accent, fontWeight: 700, letterSpacing: "0.08em", marginBottom: 8 }}>MEMBER PROPERTIES</div>
+      <Row label="Allow Input" desc="Whether members accept data input">
+        <Toggle value={props.allowInput} onChange={v => set("allowInput", v)}
+          options={[{ value: "true", label: "True", color: C.success }, { value: "false", label: "False", color: C.danger }]} />
+      </Row>
+      <Row label="Is IC Account" desc="Mark as intercompany account">
+        <Toggle value={props.isICAcc} onChange={v => set("isICAcc", v)}
+          options={[{ value: "true", label: "True", color: C.success }, { value: "false", label: "False", color: C.danger }]} />
+      </Row>
+      <Row label="Is Consolidated" desc="Whether members consolidate to parents">
+        <Toggle value={props.isConsolidated} onChange={v => set("isConsolidated", v)}
+          options={[{ value: "true", label: "True", color: C.success }, { value: "false", label: "False", color: C.danger }]} />
+      </Row>
+      <Row label="In Use" desc="Is this account actively in use?">
+        <Toggle value={props.inUse} onChange={v => set("inUse", v)}
+          options={[{ value: "True", label: "True", color: C.success }, { value: "False", label: "False", color: C.danger }]} />
+      </Row>
+      <Row label="Text1" desc="Custom text attribute">
+        <TextInput value={props.text1} onChange={v => set("text1", v)} placeholder="optional" />
+      </Row>
+
+      <div style={{ fontSize: 11, color: C.accent, fontWeight: 700, letterSpacing: "0.08em", marginTop: 18, marginBottom: 8 }}>RELATIONSHIP PROPERTIES</div>
+      <Row label="Aggregation Weight" desc="Applied to all relationships">
+        <TextInput value={props.aggregationWeight} onChange={v => set("aggregationWeight", v)} placeholder="1.0" width={100} />
+      </Row>
+    </>
+  );
+}
+
 // ── Default props per dim type ────────────────────────────────────────────────
 const DEFAULT_PROPS = {
   entity: {
     currency: "AUD", isConsolidated: "true", isIC: "true",
-    flowConstraint: "root", icConstraint: "root", text1: "",
+    flowConstraint: "root", icConstraint: "Top", text1: "",
     percentConsolidation: "100.00", percentOwnership: "100.00",
+  },
+  account: {
+    allowInput: "true", isICAcc: "false", isConsolidated: "true",
+    inUse: "True", text1: "", aggregationWeight: "1.0",
   },
   ud: {
     allowInput: "true", isConsolidated: "false", alternateCurrency: "",
@@ -210,20 +247,26 @@ export function StepProperties({ onSet, initialDimType, initialProps }) {
 
   const getDefaults = (type) => {
     if (!type) return {};
-    return type === "Entity" ? { ...DEFAULT_PROPS.entity } : { ...DEFAULT_PROPS.ud };
+    if (type === "Entity") return { ...DEFAULT_PROPS.entity };
+    if (type === "Account") return { ...DEFAULT_PROPS.account };
+    return { ...DEFAULT_PROPS.ud };
   };
 
   const [props, setProps] = useState(initialProps || getDefaults(initialDimType));
 
   const handleSelectType = (type) => {
     setDimType(type);
+    
+    // Determine categories for resetting props
+    const getCat = (t) => t === "Entity" ? "entity" : t === "Account" ? "account" : "ud";
+    
     // Only reset props if switching to a different category
     if (!initialProps) {
       setProps(getDefaults(type));
     } else {
-      const wasEntity = initialDimType === "Entity";
-      const nowEntity = type === "Entity";
-      if (wasEntity !== nowEntity) setProps(getDefaults(type));
+      const oldCat = getCat(initialDimType);
+      const newCat = getCat(type);
+      if (oldCat !== newCat) setProps(getDefaults(type));
     }
   };
 
@@ -260,10 +303,13 @@ export function StepProperties({ onSet, initialDimType, initialProps }) {
       </div>
 
       <div style={{ marginBottom: 20 }}>
-        {isEntity
-          ? <EntityPropsForm props={props} set={set} />
-          : <UDPropsForm props={props} set={set} />
-        }
+        {dimType === "Entity" ? (
+          <EntityPropsForm props={props} set={set} />
+        ) : dimType === "Account" ? (
+          <AccountPropsForm props={props} set={set} />
+        ) : (
+          <UDPropsForm props={props} set={set} />
+        )}
       </div>
 
       <Btn onClick={() => onSet(dimType, props)}>Continue →</Btn>
