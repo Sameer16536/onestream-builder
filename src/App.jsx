@@ -216,7 +216,7 @@ export default function App() {
               {step === 6 && (
                 <StepConfig
                   initialRootName={rootName || "Region"}
-                  initialDimName={dimName || "Region"}
+                  initialDimName={dimName || "RegionHierarchy"}
                   initialCollisionMode={collisionMode || "collapse"}
                   dimType={dimType}
                   initialInheritedDim={inheritedDim}
