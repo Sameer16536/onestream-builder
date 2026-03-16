@@ -52,6 +52,24 @@ export default function App() {
     setResult(null); setBuildError(null); setShowPreviewDrawer(false);
   };
 
+  // Navigate back to a previous step, clearing only downstream state
+  const handleNavigate = (targetStep) => {
+    if (targetStep >= step) return; // only go backwards
+    setStep(targetStep);
+    setShowConfirm(false);
+    setResult(null);
+    setBuildError(null);
+    // Clear state that belongs to steps after the target
+    if (targetStep <= 1) {
+      setExcelData(null); setWb(null); setFileName(""); setSheetName("");
+      setMaxLevels(null); setMapping({}); setHierarchyOrder(null);
+      setRootName(null); setDimName(null); setCollisionMode("collapse");
+    }
+    if (targetStep <= 2) { setMapping({}); setHierarchyOrder(null); setRootName(null); setDimName(null); }
+    if (targetStep <= 3) { setHierarchyOrder(null); setRootName(null); setDimName(null); }
+    if (targetStep <= 4) { setRootName(null); setDimName(null); setCollisionMode("collapse"); }
+  };
+
   const handleUploadData = (data, workbook, name, sheet) => {
     // ── Reset ALL downstream state so a sheet switch never carries over
     // stale mapping / hierarchy / collision data from a previous run ──────────
@@ -134,7 +152,7 @@ export default function App() {
             overflowY: "auto",
             alignSelf: "start",
           }}>
-            <StepSidebar step={step} sheetName={sheetName} />
+            <StepSidebar step={step} sheetName={sheetName} onNavigate={handleNavigate} />
           </div>
         )}
 
@@ -158,7 +176,10 @@ export default function App() {
                 <StepUpload onData={handleUploadData} />
               )}
               {step === 2 && (
-                <StepLevels onSet={n => { setMaxLevels(n); initMapping(n); setStep(3); }} />
+                <StepLevels
+                  initialN={maxLevels || 3}
+                  onSet={n => { setMaxLevels(n); initMapping(n); setStep(3); }}
+                />
               )}
               {step === 3 && excelData && (
                 <StepMapping
@@ -174,14 +195,20 @@ export default function App() {
                   maxLevels={maxLevels}
                   mapping={mapping}
                   headers={excelData.headers}
+                  initialOrder={hierarchyOrder}
                   onSet={o => { setHierarchyOrder(o); setStep(5); }}
                 />
               )}
               {step === 5 && (
-                <StepConfig onSet={(root, dim, mode) => {
-                  setRootName(root); setDimName(dim); setCollisionMode(mode);
-                  setShowConfirm(true);
-                }} />
+                <StepConfig
+                  initialRootName={rootName || "Region"}
+                  initialDimName={dimName || "Region"}
+                  initialCollisionMode={collisionMode || "collapse"}
+                  onSet={(root, dim, mode) => {
+                    setRootName(root); setDimName(dim); setCollisionMode(mode);
+                    setShowConfirm(true);
+                  }}
+                />
               )}
               {step === 6 && result && (
                 <ResultPanel

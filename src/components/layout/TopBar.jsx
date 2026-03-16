@@ -56,7 +56,7 @@ export function TopBar({ fileName, sheetName, processing, onReset }) {
   );
 }
 
-export function StepSidebar({ step, sheetName }) {
+export function StepSidebar({ step, sheetName, onNavigate }) {
   const steps = ["Upload", "Levels", "Map Columns", "Order", "Config"];
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
@@ -74,13 +74,29 @@ export function StepSidebar({ step, sheetName }) {
       )}
       {steps.map((label, i) => {
         const n = i + 1, done = step > n, active = step === n;
+        const clickable = done && onNavigate;
         return (
-          <div key={n} style={{
-            display: "flex", alignItems: "center", gap: 10, padding: "8px 12px",
-            borderRadius: 8,
-            background: active ? C.accentGlow : "transparent",
-            border: `1px solid ${active ? C.accent + "44" : "transparent"}`,
-          }}>
+          <div
+            key={n}
+            onClick={clickable ? () => onNavigate(n) : undefined}
+            title={clickable ? `Go back to ${label}` : undefined}
+            style={{
+              display: "flex", alignItems: "center", gap: 10, padding: "8px 12px",
+              borderRadius: 8,
+              background: active ? C.accentGlow : "transparent",
+              border: `1px solid ${active ? C.accent + "44" : "transparent"}`,
+              cursor: clickable ? "pointer" : "default",
+              transition: "background 0.15s, border-color 0.15s",
+            }}
+            onMouseEnter={clickable ? (e) => {
+              e.currentTarget.style.background = C.surfaceHigh;
+              e.currentTarget.style.borderColor = C.accent + "33";
+            } : undefined}
+            onMouseLeave={clickable ? (e) => {
+              e.currentTarget.style.background = active ? C.accentGlow : "transparent";
+              e.currentTarget.style.borderColor = active ? C.accent + "44" : "transparent";
+            } : undefined}
+          >
             <div style={{
               width: 24, height: 24, borderRadius: "50%", flexShrink: 0,
               display: "flex", alignItems: "center", justifyContent: "center",
@@ -96,6 +112,11 @@ export function StepSidebar({ step, sheetName }) {
               color: active ? C.text : done ? C.success : C.textDim,
               fontWeight: active || done ? 700 : 400,
             }}>{label}</span>
+            {clickable && (
+              <span style={{
+                marginLeft: "auto", fontSize: 10, color: C.textDim, opacity: 0.6,
+              }}>↩</span>
+            )}
           </div>
         );
       })}

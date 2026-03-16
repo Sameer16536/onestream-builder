@@ -4,8 +4,8 @@ import { validateMapping } from "../../core/validate";
 import { Btn, Alert, SectionLabel } from "../shared/primitives";
 
 // ─── Step 2: Levels ────────────────────────────────────────────────────────────
-export function StepLevels({ onSet }) {
-  const [n, setN] = useState(3);
+export function StepLevels({ onSet, initialN = 3 }) {
+  const [n, setN] = useState(initialN);
   return (
     <div>
       <SectionLabel n="2" label="Hierarchy Depth" sub="How many levels does this dimension have?" />
@@ -140,9 +140,9 @@ export function StepMapping({ headers, maxLevels, onSet, mapping, setMapping }) 
 }
 
 // ─── Step 4: Hierarchy Order ───────────────────────────────────────────────────
-export function StepHierarchyOrder({ maxLevels, mapping, headers, onSet }) {
+export function StepHierarchyOrder({ maxLevels, mapping, headers, onSet, initialOrder }) {
   const levels = Array.from({ length: maxLevels }, (_, i) => `L${i + 1}`);
-  const [order, setOrder]   = useState([...levels]);
+  const [order, setOrder]   = useState(initialOrder && initialOrder.length === maxLevels ? [...initialOrder] : [...levels]);
   const [dragIdx, setDragIdx] = useState(null);
   const [overIdx, setOverIdx] = useState(null);
 
@@ -221,10 +221,10 @@ export function StepHierarchyOrder({ maxLevels, mapping, headers, onSet }) {
 }
 
 // ─── Step 5: Config + Collision Mode ──────────────────────────────────────────
-export function StepConfig({ onSet }) {
-  const [rootName,      setRootName]      = useState("Region");
-  const [dimName,       setDimName]       = useState("Region");
-  const [collisionMode, setCollisionMode] = useState("collapse");
+export function StepConfig({ onSet, initialRootName = "Region", initialDimName = "Region", initialCollisionMode = "collapse" }) {
+  const [rootName,      setRootName]      = useState(initialRootName);
+  const [dimName,       setDimName]       = useState(initialDimName);
+  const [collisionMode, setCollisionMode] = useState(initialCollisionMode);
 
   const inputStyle = {
     width: "100%", padding: "10px 14px", borderRadius: 8, fontSize: 14,
