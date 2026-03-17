@@ -1,16 +1,16 @@
 import { CHUNK_SIZE, MAX_MEMBER_NAME } from "../constants";
 import { normalizeName } from "./utils";
 
-export async function buildHierarchyAsync(rows, mapping, hierarchyOrder, rootName, collisionMode, onProgress) {
+export async function buildHierarchyAsync(rows, mapping, descMapping, hierarchyOrder, rootName, collisionMode, onProgress) {
   return new Promise((resolve) => {
-    const members        = {};
-    const relationships  = [];
-    const relPairs       = new Set();
+    const members = {};
+    const relationships = [];
+    const relPairs = new Set();
     const assignedParent = new Set();
-    const warnings       = [];
-    const collisions     = [];
-    const dataQuality    = { emptyRows: 0, truncatedNames: [], partialRows: [], collapsedDupes: [] };
-    const safeKey        = n => n ? n.toLowerCase() : null;
+    const warnings = [];
+    const collisions = [];
+    const dataQuality = { emptyRows: 0, truncatedNames: [], partialRows: [], collapsedDupes: [] };
+    const safeKey = n => n ? n.toLowerCase() : null;
 
     // ── Pass 1: detect cross-level name collisions ──────────────────────────
     // NOTE: Pass 1 itself is chunked to avoid blocking on large files
@@ -56,15 +56,30 @@ export async function buildHierarchyAsync(rows, mapping, hierarchyOrder, rootNam
         if (norm.length === MAX_MEMBER_NAME && original.length > MAX_MEMBER_NAME) {
           dataQuality.truncatedNames.push({ original, normalized: norm, level });
         }
-        return collisionSet.has(norm) ? `${norm}_${level}` : norm;
+        // Only suffix with level in rename mode.
+        // In collapse mode, the same name across levels = the same member, no suffix.
+        if (collisionMode === "rename" && collisionSet.has(norm)) {
+          return `${norm}_${level}`;
+        }
+        return norm;
       };
 
-      const addMember = (rawVal, level) => {
+      const addMember = (rawVal, level, row) => {
         const name = getMemberName(rawVal, level);
         if (!name) return null;
         if (!members[name]) {
           const rawStr = String(rawVal).trim();
-          const desc = collisionSet.has(normalizeName(rawVal)) ? `${rawStr} (${level})` : rawStr;
+          // Use dedicated description column if mapped for this level, else fall back to name value
+          const descColIdx = descMapping && descMapping[level] !== "" && descMapping[level] !== undefined
+            ? parseInt(descMapping[level])
+            : null;
+          const rawDesc = descColIdx !== null && row && row[descColIdx] !== null && row[descColIdx] !== undefined
+            ? String(row[descColIdx]).trim()
+            : null;
+          const baseDesc = rawDesc || rawStr;
+          const desc = (collisionMode === "rename" && collisionSet.has(normalizeName(rawVal)))
+            ? `${baseDesc} (${level})`
+            : baseDesc;
           members[name] = { name, desc };
         }
         return name;
@@ -133,7 +148,7 @@ export async function buildHierarchyAsync(rows, mapping, hierarchyOrder, rootNam
             for (const entry of levelValues) {
               if (!entry) break;
               const { level, rawVal } = entry;
-              const name = addMember(rawVal, level);
+              const name = addMember(rawVal, level, row);
               if (!name) break;
               const normKey = safeKey(name);
               if (normKey === lastDistinctNorm) {
@@ -157,7 +172,7 @@ export async function buildHierarchyAsync(rows, mapping, hierarchyOrder, rootNam
                 break;
               }
               const { level, rawVal } = entry;
-              const name = addMember(rawVal, level);
+              const name = addMember(rawVal, level, row);
               if (!name) break;
               addRel(previous, name, i + 1, ancestors);
               ancestors.add(safeKey(name));

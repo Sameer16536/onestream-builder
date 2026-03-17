@@ -43,9 +43,9 @@ export function StepLevels({ onSet, initialN = 3 }) {
 }
 
 // ─── Step 3: Column Mapping ────────────────────────────────────────────────────
-export function StepMapping({ headers, maxLevels, onSet, mapping, setMapping }) {
+export function StepMapping({ headers, maxLevels, onSet, mapping, setMapping, descMapping, setDescMapping }) {
   const [submitted, setSubmitted] = useState(false);
-  const levels    = Array.from({ length: maxLevels }, (_, i) => `L${i + 1}`);
+  const levels = Array.from({ length: maxLevels }, (_, i) => `L${i + 1}`);
   const allMapped = levels.every(l => mapping[l] !== "");
   const { errors: mapErrors, warnings: mapWarnings } = submitted
     ? validateMapping(mapping, headers, maxLevels)
@@ -54,51 +54,91 @@ export function StepMapping({ headers, maxLevels, onSet, mapping, setMapping }) 
   const handleConfirm = () => {
     setSubmitted(true);
     const { errors } = validateMapping(mapping, headers, maxLevels);
-    if (!errors.length) onSet(mapping);
+    if (!errors.length) onSet(mapping, descMapping);
   };
+
+  const selectStyle = (mapped, color) => ({
+    width: "100%", padding: "8px 12px", borderRadius: 8, fontSize: 13,
+    background: mapped ? color + "18" : C.bg,
+    border: `1.5px solid ${mapped ? color + "44" : C.borderBright}`,
+    color: mapped ? color : C.textMuted,
+    outline: "none", cursor: "pointer",
+    fontWeight: mapped ? 600 : 400, fontFamily: "inherit",
+  });
 
   return (
     <div>
-      <SectionLabel n="3" label="Map Columns to Levels" sub="Select which Excel column maps to each level." />
+      <SectionLabel n="3" label="Map Columns to Levels" sub="Select the member name column for each level. Optionally map a description column." />
       <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 18 }}>
         {levels.map((level, i) => {
-          const color  = LV_COLORS[i];
+          const color = LV_COLORS[i];
           const mapped = mapping[level] !== "";
+          const descMapped = descMapping[level] !== "" && descMapping[level] !== undefined;
           return (
             <div key={level} style={{
-              display: "flex", alignItems: "center", gap: 12, padding: "12px 16px",
               borderRadius: 12,
-              background: mapped ? color + "12" : C.surfaceHigh,
-              border: `1.5px solid ${mapped ? color + "66" : C.border}`,
+              background: mapped ? color + "0a" : C.surfaceHigh,
+              border: `1.5px solid ${mapped ? color + "55" : C.border}`,
               transition: "all 0.2s",
+              overflow: "hidden",
             }}>
-              <div style={{
-                width: 44, height: 44, borderRadius: 10, flexShrink: 0,
-                background: color + (mapped ? "33" : "18"),
-                border: `2px solid ${color + (mapped ? "88" : "44")}`,
-                display: "flex", alignItems: "center", justifyContent: "center",
-                fontWeight: 800, color, fontSize: 14,
-              }}>{level}</div>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <select
-                  value={mapping[level]}
-                  onChange={e => { setSubmitted(false); setMapping(prev => ({ ...prev, [level]: e.target.value })); }}
-                  style={{
-                    width: "100%", padding: "9px 12px", borderRadius: 8, fontSize: 14,
-                    background: mapped ? color + "18" : C.bg,
-                    border: `1.5px solid ${mapped ? color + "66" : C.borderBright}`,
-                    color: mapped ? color : C.textMuted,
-                    outline: "none", cursor: "pointer",
-                    fontWeight: mapped ? 700 : 400, fontFamily: "inherit",
-                  }}
-                >
-                  <option value="">— select a column —</option>
-                  {headers.map((h, idx) => (
-                    <option key={idx} value={idx}>{h || `Column ${idx + 1}`}</option>
-                  ))}
-                </select>
+              {/* ── Name row ── */}
+              <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 16px" }}>
+                <div style={{
+                  width: 44, height: 44, borderRadius: 10, flexShrink: 0,
+                  background: color + (mapped ? "33" : "18"),
+                  border: `2px solid ${color + (mapped ? "88" : "44")}`,
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  fontWeight: 800, color, fontSize: 14,
+                }}>{level}</div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: 10, color: C.textMuted, marginBottom: 4, fontWeight: 700, letterSpacing: "0.05em" }}>
+                    MEMBER NAME
+                  </div>
+                  <select
+                    value={mapping[level]}
+                    onChange={e => { setSubmitted(false); setMapping(prev => ({ ...prev, [level]: e.target.value })); }}
+                    style={selectStyle(mapped, color)}
+                  >
+                    <option value="">— select a column —</option>
+                    {headers.map((h, idx) => (
+                      <option key={idx} value={idx}>{h || `Column ${idx + 1}`}</option>
+                    ))}
+                  </select>
+                </div>
+                {mapped && <span style={{ fontSize: 18, color: C.success, flexShrink: 0 }}>✓</span>}
               </div>
-              {mapped && <span style={{ fontSize: 18, color: C.success, flexShrink: 0 }}>✓</span>}
+
+              {/* ── Description row — only shown once name is mapped ── */}
+              {mapped && (
+                <div style={{
+                  display: "flex", alignItems: "center", gap: 12,
+                  padding: "10px 16px 12px 76px",
+                  borderTop: `1px dashed ${color}33`,
+                  background: color + "06",
+                }}>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: 10, color: C.textMuted, marginBottom: 4, fontWeight: 700, letterSpacing: "0.05em" }}>
+                      DESCRIPTION <span style={{ color: C.textDim, fontWeight: 400 }}>(optional)</span>
+                    </div>
+                    <select
+                      value={descMapping[level] ?? ""}
+                      onChange={e => setDescMapping(prev => ({ ...prev, [level]: e.target.value }))}
+                      style={selectStyle(descMapped, color)}
+                    >
+                      <option value="">— same as name / none —</option>
+                      {headers.map((h, idx) => (
+                        <option key={idx} value={idx}>{h || `Column ${idx + 1}`}</option>
+                      ))}
+                    </select>
+                  </div>
+                  {descMapped && (
+                    <span style={{ fontSize: 11, color, flexShrink: 0, fontWeight: 700 }}>
+                      📝 {headers[parseInt(descMapping[level])] || `Col ${parseInt(descMapping[level]) + 1}`}
+                    </span>
+                  )}
+                </div>
+              )}
             </div>
           );
         })}
@@ -113,8 +153,11 @@ export function StepMapping({ headers, maxLevels, onSet, mapping, setMapping }) 
           <span style={{ fontSize: 11, color: C.textMuted, alignSelf: "center", marginRight: 4 }}>Mapped:</span>
           {levels.map((level, i) => {
             if (mapping[level] === "") return null;
-            const color   = LV_COLORS[i];
+            const color = LV_COLORS[i];
             const colName = headers[parseInt(mapping[level])] || `Col ${parseInt(mapping[level]) + 1}`;
+            const descCol = descMapping[level] !== "" && descMapping[level] !== undefined
+              ? headers[parseInt(descMapping[level])] || `Col ${parseInt(descMapping[level]) + 1}`
+              : null;
             return (
               <span key={level} style={{
                 display: "inline-flex", alignItems: "center", gap: 4,
@@ -124,6 +167,12 @@ export function StepMapping({ headers, maxLevels, onSet, mapping, setMapping }) 
                 <span style={{ fontWeight: 800, color }}>{level}</span>
                 <span style={{ color: C.textDim }}>→</span>
                 <span style={{ color, fontWeight: 600 }}>{colName}</span>
+                {descCol && (
+                  <>
+                    <span style={{ color: C.textDim, fontSize: 10 }}>desc:</span>
+                    <span style={{ color: color + "cc", fontWeight: 500 }}>{descCol}</span>
+                  </>
+                )}
               </span>
             );
           })}
@@ -131,7 +180,7 @@ export function StepMapping({ headers, maxLevels, onSet, mapping, setMapping }) 
       )}
 
       {mapWarnings.map((w, i) => <Alert key={i} type="warn">{w}</Alert>)}
-      {mapErrors.map((e, i)   => <Alert key={i} type="error">{e}</Alert>)}
+      {mapErrors.map((e, i) => <Alert key={i} type="error">{e}</Alert>)}
       <Btn onClick={handleConfirm} disabled={!allMapped}>
         {allMapped ? "Confirm Mapping →" : `Map all ${maxLevels} levels to continue`}
       </Btn>
@@ -142,7 +191,7 @@ export function StepMapping({ headers, maxLevels, onSet, mapping, setMapping }) 
 // ─── Step 4: Hierarchy Order ───────────────────────────────────────────────────
 export function StepHierarchyOrder({ maxLevels, mapping, headers, onSet, initialOrder }) {
   const levels = Array.from({ length: maxLevels }, (_, i) => `L${i + 1}`);
-  const [order, setOrder]   = useState(initialOrder && initialOrder.length === maxLevels ? [...initialOrder] : [...levels]);
+  const [order, setOrder] = useState(initialOrder && initialOrder.length === maxLevels ? [...initialOrder] : [...levels]);
   const [dragIdx, setDragIdx] = useState(null);
   const [overIdx, setOverIdx] = useState(null);
 
@@ -159,10 +208,10 @@ export function StepHierarchyOrder({ maxLevels, mapping, headers, onSet, initial
 
       <div style={{ display: "flex", alignItems: "center", overflowX: "auto", padding: "16px 4px", marginBottom: 16 }}>
         {order.map((level, idx) => {
-          const colIdx  = parseInt(mapping[level]);
+          const colIdx = parseInt(mapping[level]);
           const colName = headers[colIdx] || level;
-          const color   = LV_COLORS[levels.indexOf(level)];
-          const isOver  = overIdx === idx;
+          const color = LV_COLORS[levels.indexOf(level)];
+          const isOver = overIdx === idx;
           return (
             <div key={level} style={{ display: "flex", alignItems: "center" }}>
               <div
@@ -198,7 +247,7 @@ export function StepHierarchyOrder({ maxLevels, mapping, headers, onSet, initial
           PARENT RELATIONSHIPS
         </div>
         {order.map((level, idx) => {
-          const color       = LV_COLORS[levels.indexOf(level)];
+          const color = LV_COLORS[levels.indexOf(level)];
           const parentLevel = idx > 0 ? order[idx - 1] : null;
           const parentColor = parentLevel ? LV_COLORS[levels.indexOf(parentLevel)] : null;
           return (
@@ -223,10 +272,10 @@ export function StepHierarchyOrder({ maxLevels, mapping, headers, onSet, initial
 // ─── Step 6: Config + Collision Mode ──────────────────────────────────────────
 export function StepConfig({ onSet, initialRootName = "Region", initialDimName = "Region", initialCollisionMode = "collapse", dimType, initialInheritedDim }) {
   const defaultInherited = initialInheritedDim || (dimType ? `Root${dimType}Dim` : "RootUD1Dim");
-  const [rootName,      setRootName]      = useState(initialRootName);
-  const [dimName,       setDimName]       = useState(initialDimName);
+  const [rootName, setRootName] = useState(initialRootName);
+  const [dimName, setDimName] = useState(initialDimName);
   const [collisionMode, setCollisionMode] = useState(initialCollisionMode);
-  const [inheritedDim,  setInheritedDim]  = useState(defaultInherited);
+  const [inheritedDim, setInheritedDim] = useState(defaultInherited);
 
   const inputStyle = {
     width: "100%", padding: "10px 14px", borderRadius: 8, fontSize: 14,

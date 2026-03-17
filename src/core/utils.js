@@ -33,12 +33,12 @@ export function formatBytes(b) {
 // ── UD1–UD8 member properties ──────────────────────────────────────────────────
 function buildUDMemberProps(props, indent = "              ") {
   const p = props || {};
-  const allow   = p.allowInput       ?? "true";
-  const consol  = p.isConsolidated   ?? "false";
+  const allow = p.allowInput ?? "true";
+  const consol = p.isConsolidated ?? "false";
   const altCurr = p.alternateCurrency ?? "";
-  const isAttr  = p.isAttributeMember ?? "false";
-  const text1   = p.text1 ?? "";
-  const text2   = p.text2 ?? "";
+  const isAttr = p.isAttributeMember ?? "false";
+  const text1 = p.text1 ?? "";
+  const text2 = p.text2 ?? "";
   return [
     `${indent}<property name="FormulaType" value=""/>`,
     `${indent}<property name="AllowInput" value="${allow}"/>`,
@@ -65,11 +65,11 @@ function buildUDMemberProps(props, indent = "              ") {
 // ── Account member properties ─────────────────────────────────────────────────
 function buildAccountMemberProps(props, indent = "              ") {
   const p = props || {};
-  const allow   = p.allowInput     ?? "true";
-  const isIC    = p.isICAcc        ?? "false";
-  const consol  = p.isConsolidated ?? "true";
-  const inUse   = p.inUse          ?? "True";
-  const text1   = p.text1          ?? "";
+  const allow = p.allowInput ?? "true";
+  const isIC = p.isICAcc ?? "false";
+  const consol = p.isConsolidated ?? "true";
+  const inUse = p.inUse ?? "True";
+  const text1 = p.text1 ?? "";
   return [
     `${indent}<property name="AllowInput" value="${allow}"/>`,
     `${indent}<property name="IsICAccount" value="${isIC}"/>`,
@@ -82,12 +82,12 @@ function buildAccountMemberProps(props, indent = "              ") {
 // ── Entity member properties ────────────────────────────────────────────────────
 function buildEntityMemberProps(props, indent = "              ") {
   const p = props || {};
-  const currency     = p.currency         ?? "AUD";
-  const consol       = p.isConsolidated   ?? "true";
-  const isIC         = p.isIC             ?? "true";
-  const flowConst    = p.flowConstraint   ?? "root";
-  const icConst      = p.icConstraint     ?? "root";
-  const text1        = p.text1            ?? "";
+  const currency = p.currency ?? "AUD";
+  const consol = p.isConsolidated ?? "true";
+  const isIC = p.isIC ?? "true";
+  const flowConst = p.flowConstraint ?? "root";
+  const icConst = p.icConstraint ?? "root";
+  const text1 = p.text1 ?? "";
   return [
     `${indent}<property name="Currency" value="${escapeXml(currency)}"/>`,
     `${indent}<property name="IsConsolidated" value="${consol}"/>`,
@@ -108,8 +108,8 @@ function buildEntityMemberProps(props, indent = "              ") {
 // ── Entity relationship properties ──────────────────────────────────────────────
 function buildEntityRelProps(props, indent = "            ") {
   const p = props || {};
-  const pctConsol    = p.percentConsolidation ?? "100.00";
-  const pctOwnership = p.percentOwnership     ?? "100.00";
+  const pctConsol = p.percentConsolidation ?? "100.00";
+  const pctOwnership = p.percentOwnership ?? "100.00";
   return [
     `${indent}<properties>`,
     `${indent}  <property name="ParentSortOrder" value="0"/>`,
@@ -135,26 +135,21 @@ export function generateOneStreamXml({ members, relationships, dimType, dimName,
   // For Account, we will use the standard member tag but without action="Delete" to match entity behavior, 
   // or use the exact same attributes if desired. Given no spec, we stick to the basic tag as UD but without action="Delete" or use the full one if needed.
   // Actually, usually Account requires readDataGroup too, but let's emulate Entity tag for now if isAccount, or just UD. The user said go with entity logic for now for tags, but property block is distinct.
-  const memberTag = (m) => isEntity
-    ? `          <member name="${escapeXml(m.name)}" alias="" description="${escapeXml(m.desc)}" displayMemberGroup="Everyone" readDataGroup="Everyone" readDataGroup2="Nobody" readWriteDataGroup="Everyone" readWriteDataGroup2="Nobody" useCubeDataAccessSecurity="false" dataCellAccessCategories="" conditionalInputCategories="" dataMgmtAccessCategories="">`
-    : isAccount 
-    ? `          <member name="${escapeXml(m.name)}" alias="" description="${escapeXml(m.desc)}" displayMemberGroup="Everyone">`
-    : `          <member name="${escapeXml(m.name)}" alias="" description="${escapeXml(m.desc)}" displayMemberGroup="Everyone" action="Delete">`;
-
+  const memberTag = (m) => `<member name="${escapeXml(m.name)}" alias="" description="${escapeXml(m.desc)}" displayMemberGroup="Everyone" >`
   // Member properties block
   const memberPropsBlock = isEntity
     ? buildEntityMemberProps(memberProps)
     : isAccount
-    ? buildAccountMemberProps(memberProps)
-    : buildUDMemberProps(memberProps);
+      ? buildAccountMemberProps(memberProps)
+      : buildUDMemberProps(memberProps);
 
   // Relationship element differs: Entity has nested <properties>, UD and Account have aggregationWeight attr
   const relElement = (r) => isEntity
     ? [
-        `          <relationship parent="${escapeXml(r.parent)}" child="${escapeXml(r.child)}">`,
-        buildEntityRelProps(memberProps),
-        `          </relationship>`,
-      ].join("\n")
+      `          <relationship parent="${escapeXml(r.parent)}" child="${escapeXml(r.child)}">`,
+      buildEntityRelProps(memberProps),
+      `          </relationship>`,
+    ].join("\n")
     : `          <relationship parent="${escapeXml(r.parent)}" child="${escapeXml(r.child)}" aggregationWeight="${agw}"/>`;
 
   const lines = [

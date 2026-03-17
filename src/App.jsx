@@ -22,6 +22,7 @@ export default function App() {
   const [sheetName, setSheetName] = useState("");
   const [maxLevels, setMaxLevels] = useState(null);
   const [mapping, setMapping] = useState({});
+  const [descMapping, setDescMapping] = useState({});
   const [hierarchyOrder, setHierarchyOrder] = useState(null);
   // Step 5 — Properties
   const [dimType, setDimType] = useState(null);
@@ -49,12 +50,13 @@ export default function App() {
     const m = {};
     for (let i = 1; i <= n; i++) m[`L${i}`] = "";
     setMapping(m);
+    setDescMapping({ ...m }); // same keys, all empty
   };
 
   const reset = () => {
     setStep(1); setExcelData(null); setWb(null);
     setFileName(""); setSheetName("");
-    setMaxLevels(null); setMapping({}); setHierarchyOrder(null);
+    setMaxLevels(null); setMapping({}); setDescMapping({}); setHierarchyOrder(null);
     setDimType(null); setMemberProps(null);
     setRootName(null); setDimName(null); setInheritedDim(null); setCollisionMode("collapse");
     setShowConfirm(false); setProcessing(false); setProgress(0);
@@ -71,11 +73,11 @@ export default function App() {
     // Clear state that belongs to steps after the target
     if (targetStep <= 1) {
       setExcelData(null); setWb(null); setFileName(""); setSheetName("");
-      setMaxLevels(null); setMapping({}); setHierarchyOrder(null);
+      setMaxLevels(null); setMapping({}); setDescMapping({}); setHierarchyOrder(null);
       setDimType(null); setMemberProps(null);
       setRootName(null); setDimName(null); setInheritedDim(null); setCollisionMode("collapse");
     }
-    if (targetStep <= 2) { setMapping({}); setHierarchyOrder(null); setDimType(null); setMemberProps(null); setRootName(null); setDimName(null); setInheritedDim(null); }
+    if (targetStep <= 2) { setMapping({}); setDescMapping({}); setHierarchyOrder(null); setDimType(null); setMemberProps(null); setRootName(null); setDimName(null); setInheritedDim(null); }
     if (targetStep <= 3) { setHierarchyOrder(null); setDimType(null); setMemberProps(null); setRootName(null); setDimName(null); setInheritedDim(null); }
     if (targetStep <= 4) { setDimType(null); setMemberProps(null); setRootName(null); setDimName(null); setInheritedDim(null); }
     if (targetStep <= 5) { setRootName(null); setDimName(null); setInheritedDim(null); setCollisionMode("collapse"); }
@@ -88,6 +90,7 @@ export default function App() {
     setSheetName(sheet);
     setMaxLevels(null);
     setMapping({});
+    setDescMapping({});
     setHierarchyOrder(null);
     setDimType(null); setMemberProps(null);
     setRootName(null); setDimName(null); setInheritedDim(null); setCollisionMode("collapse");
@@ -102,7 +105,7 @@ export default function App() {
     setShowConfirm(false); setProcessing(true); setProgress(0); setBuildError(null);
     try {
       const r = await buildHierarchyAsync(
-        excelData.rows, mapping, hierarchyOrder, rootName, collisionMode, setProgress
+        excelData.rows, mapping, descMapping, hierarchyOrder, rootName, collisionMode, setProgress
       );
       setResult(r); setStep(7);
     } catch (e) { setBuildError(e.message); }
@@ -194,7 +197,9 @@ export default function App() {
                   maxLevels={maxLevels}
                   mapping={mapping}
                   setMapping={setMapping}
-                  onSet={m => { setMapping(m); setStep(4); }}
+                  descMapping={descMapping}
+                  setDescMapping={setDescMapping}
+                  onSet={(m, dm) => { setMapping(m); setDescMapping(dm); setStep(4); }}
                 />
               )}
               {step === 4 && excelData && (
