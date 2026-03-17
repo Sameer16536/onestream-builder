@@ -17,9 +17,8 @@ export function ExcelPreview({ rows, headers, totalRows, mapping }) {
     });
   }
 
-  const visibleCols = Math.min(headers.length, 12);
-  const totalPages  = Math.ceil(rows.length / PAGE_SIZE);
-  const pageRows    = rows.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
+  const totalPages = Math.ceil(rows.length / PAGE_SIZE);
+  const pageRows   = rows.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
 
   return (
     <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: 14, overflow: "hidden" }}>
@@ -35,12 +34,12 @@ export function ExcelPreview({ rows, headers, totalRows, mapping }) {
         </span>
       </div>
 
-      {/* Table */}
-      <div style={{ overflowX: "auto" }}>
-        <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 11 }}>
+      {/* Table — overflowX allows scrolling all columns */}
+      <div style={{ overflowX: "auto", WebkitOverflowScrolling: "touch" }}>
+        <table style={{ width: "max-content", minWidth: "100%", borderCollapse: "collapse", fontSize: 11 }}>
           <thead>
             <tr>
-              {headers.slice(0, visibleCols).map((h, ci) => {
+              {headers.map((h, ci) => {
                 const isMapped = colToLevel[ci] !== undefined;
                 const color    = colToColor[ci];
                 return (
@@ -66,7 +65,7 @@ export function ExcelPreview({ rows, headers, totalRows, mapping }) {
           <tbody>
             {pageRows.map((row, ri) => (
               <tr key={ri} style={{ borderBottom: `1px solid ${C.border}` }}>
-                {Array.from({ length: visibleCols }, (_, ci) => {
+                {headers.map((_, ci) => {
                   const isMapped = colToLevel[ci] !== undefined;
                   const color    = colToColor[ci];
                   const val      = row[ci];
@@ -106,11 +105,6 @@ export function ExcelPreview({ rows, headers, totalRows, mapping }) {
             </span>
             <Btn small variant="ghost" disabled={page >= totalPages - 1} onClick={() => setPage(p => p + 1)}>Next ›</Btn>
           </>
-        )}
-        {headers.length > visibleCols && (
-          <span style={{ fontSize: 10, color: C.textDim, marginLeft: "auto" }}>
-            +{headers.length - visibleCols} more columns hidden
-          </span>
         )}
       </div>
     </div>
