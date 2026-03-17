@@ -57,8 +57,9 @@ function buildUDMemberProps(props, indent = "              ") {
     `${indent}<property name="AttributeMemberOperatorType2" value=""/>`,
     `${indent}<property name="WorkflowChannel" scenarioType="" value="NoDataLock"/>`,
     `${indent}<property name="InUse" scenarioType="" time="" revertToDefaultScenarioType="false" value="True"/>`,
-    `${indent}<property name="Text1" scenarioType="" time="" revertToDefaultScenarioType="false" value="${escapeXml(text1)}"/>`,
-    `${indent}<property name="Text2" scenarioType="" time="" revertToDefaultScenarioType="false" value="${escapeXml(text2)}"/>`,
+    ...Array.from({ length: 8 }).map((_, i) =>
+      `${indent}<property name="Text${i + 1}" scenarioType="" time="" revertToDefaultScenarioType="false" value="${escapeXml(p[`text${i + 1}`] ?? "")}"/>`
+    ),
   ].join("\n");
 }
 
@@ -75,7 +76,9 @@ function buildAccountMemberProps(props, indent = "              ") {
     `${indent}<property name="IsICAccount" value="${isIC}"/>`,
     `${indent}<property name="IsConsolidated" value="${consol}"/>`,
     `${indent}<property name="InUse" scenarioType="" time="" revertToDefaultScenarioType="false" value="${inUse}"/>`,
-    `${indent}<property name="Text1" scenarioType="" time="" revertToDefaultScenarioType="false" value="${escapeXml(text1)}"/>`,
+    ...Array.from({ length: 8 }).map((_, i) =>
+      `${indent}<property name="Text${i + 1}" scenarioType="" time="" revertToDefaultScenarioType="false" value="${escapeXml(p[`text${i + 1}`] ?? "")}"/>`
+    ),
   ].join("\n");
 }
 
@@ -101,7 +104,9 @@ function buildEntityMemberProps(props, indent = "              ") {
     `${indent}<property name="SiblingConsolidationPass" scenarioType="" value="Unknown"/>`,
     `${indent}<property name="SiblingRepeatCalcPass" scenarioType="" value="Unknown"/>`,
     `${indent}<property name="AutoTranslationCurrencies" scenarioType="" value=""/>`,
-    `${indent}<property name="Text1" scenarioType="" time="" revertToDefaultScenarioType="false" value="${escapeXml(text1)}"/>`,
+    ...Array.from({ length: 8 }).map((_, i) =>
+      `${indent}<property name="Text${i + 1}" scenarioType="" time="" revertToDefaultScenarioType="false" value="${escapeXml(p[`text${i + 1}`] ?? "")}"/>`
+    ),
   ].join("\n");
 }
 
@@ -115,7 +120,9 @@ function buildEntityRelProps(props, indent = "            ") {
     `${indent}  <property name="ParentSortOrder" value="0"/>`,
     `${indent}  <property name="PercentConsolidation" scenarioType="" time="" revertToDefaultScenarioType="false" value="${pctConsol}"/>`,
     `${indent}  <property name="PercentOwnership" scenarioType="" time="" revertToDefaultScenarioType="false" value="${pctOwnership}"/>`,
-    `${indent}  <property name="Text1" scenarioType="" time="" revertToDefaultScenarioType="false" value=""/>`,
+    ...Array.from({ length: 8 }).map((_, i) =>
+      `${indent}  <property name="Text${i + 1}" scenarioType="" time="" revertToDefaultScenarioType="false" value=""/>`
+    ),
     `${indent}</properties>`,
   ].join("\n");
 }

@@ -132,12 +132,11 @@ function UDPropsForm({ props, set }) {
       <Row label="Alternate Currency for Display" desc="Leave empty for none">
         <TextInput value={props.alternateCurrency} onChange={v => set("alternateCurrency", v)} placeholder="e.g. USD" />
       </Row>
-      <Row label="Text1" desc="Custom text attribute 1">
-        <TextInput value={props.text1} onChange={v => set("text1", v)} placeholder="optional" />
-      </Row>
-      <Row label="Text2" desc="Custom text attribute 2">
-        <TextInput value={props.text2} onChange={v => set("text2", v)} placeholder="optional" />
-      </Row>
+      {Array.from({ length: 8 }).map((_, i) => (
+        <Row key={i + 1} label={`Text${i + 1}`} desc={`Custom text attribute ${i + 1}`}>
+          <TextInput value={props[`text${i + 1}`]} onChange={v => set(`text${i + 1}`, v)} placeholder="optional" />
+        </Row>
+      ))}
       <Row label="Aggregation Weight" desc="Applied to all relationships">
         <input
           type="number" step="0.1" min="0"
@@ -176,9 +175,11 @@ function EntityPropsForm({ props, set }) {
       <Row label="IC Constraint" desc="cubeType value for ICConstraint">
         <TextInput value={props.icConstraint} onChange={v => set("icConstraint", v)} placeholder="Top" />
       </Row>
-      <Row label="Text1" desc="Custom text attribute">
-        <TextInput value={props.text1} onChange={v => set("text1", v)} placeholder="optional" />
-      </Row>
+      {Array.from({ length: 8 }).map((_, i) => (
+        <Row key={i + 1} label={`Text${i + 1}`} desc={`Custom text attribute ${i + 1}`}>
+          <TextInput value={props[`text${i + 1}`]} onChange={v => set(`text${i + 1}`, v)} placeholder="optional" />
+        </Row>
+      ))}
 
       <div style={{ fontSize: 11, color: C.accent, fontWeight: 700, letterSpacing: "0.08em", marginTop: 18, marginBottom: 8 }}>RELATIONSHIP PROPERTIES</div>
       <Row label="% Consolidation" desc="PercentConsolidation on all relationships">
@@ -212,9 +213,11 @@ function AccountPropsForm({ props, set }) {
         <Toggle value={props.inUse} onChange={v => set("inUse", v)}
           options={[{ value: "True", label: "True", color: C.success }, { value: "False", label: "False", color: C.danger }]} />
       </Row>
-      <Row label="Text1" desc="Custom text attribute">
-        <TextInput value={props.text1} onChange={v => set("text1", v)} placeholder="optional" />
-      </Row>
+      {Array.from({ length: 8 }).map((_, i) => (
+        <Row key={i + 1} label={`Text${i + 1}`} desc={`Custom text attribute ${i + 1}`}>
+          <TextInput value={props[`text${i + 1}`]} onChange={v => set(`text${i + 1}`, v)} placeholder="optional" />
+        </Row>
+      ))}
 
       <div style={{ fontSize: 11, color: C.accent, fontWeight: 700, letterSpacing: "0.08em", marginTop: 18, marginBottom: 8 }}>RELATIONSHIP PROPERTIES</div>
       <Row label="Aggregation Weight" desc="Applied to all relationships">
@@ -225,19 +228,24 @@ function AccountPropsForm({ props, set }) {
 }
 
 // ── Default props per dim type ────────────────────────────────────────────────
+const textDefaults = Object.fromEntries(Array.from({ length: 8 }, (_, i) => [`text${i + 1}`, ""]));
+
 const DEFAULT_PROPS = {
   entity: {
     currency: "AUD", isConsolidated: "true", isIC: "true",
-    flowConstraint: "root", icConstraint: "Top", text1: "",
+    flowConstraint: "root", icConstraint: "Top",
     percentConsolidation: "100.00", percentOwnership: "100.00",
+    ...textDefaults
   },
   account: {
     allowInput: "true", isICAcc: "false", isConsolidated: "true",
-    inUse: "True", text1: "", aggregationWeight: "1.0",
+    inUse: "True", aggregationWeight: "1.0",
+    ...textDefaults
   },
   ud: {
     allowInput: "true", isConsolidated: "false", alternateCurrency: "",
-    isAttributeMember: "false", text1: "", text2: "", aggregationWeight: "1.0",
+    isAttributeMember: "false", aggregationWeight: "1.0",
+    ...textDefaults
   },
 };
 
